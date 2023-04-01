@@ -68,10 +68,17 @@ export function fetchRegister<T = any>(username: string, password: string) {
   })
 }
 
+<<<<<<< HEAD
 export function fetchUpdateUserInfo<T = any>(name: string, avatar: string, description: string) {
   return post<T>({
     url: '/user-info',
     data: { name, avatar, description },
+=======
+export function fetchUpdateUserInfo<T = any>(name: string, avatar: string, description: string, score: number) {
+  return post<T>({
+    url: '/user-info',
+    data: { name, avatar, description, score },
+>>>>>>> first commit
   })
 }
 
@@ -102,9 +109,15 @@ export function fetchDeleteChatRoom<T = any>(roomId: number) {
   })
 }
 
+<<<<<<< HEAD
 export function fetchGetChatHistory<T = any>(roomId: number, lastId?: number) {
   return get<T>({
     url: `/chat-hisroty?roomId=${roomId}&lastId=${lastId}`,
+=======
+export function fetchGetChatHistory<T = any>(roomId: number) {
+  return get<T>({
+    url: `/chat-hisroty?roomid=${roomId}`,
+>>>>>>> first commit
   })
 }
 

@@ -1,15 +1,28 @@
 <script setup lang='ts'>
 import { defineAsyncComponent, ref } from 'vue'
+<<<<<<< HEAD
+=======
+import { useRouter } from 'vue-router'
+>>>>>>> first commit
 import { HoverButton, SvgIcon, UserAvatar } from '@/components/common'
 import { useAuthStore } from '@/store'
 const Setting = defineAsyncComponent(() => import('@/components/common/Setting/index.vue'))
 
 const authStore = useAuthStore()
+<<<<<<< HEAD
+=======
+const router = useRouter()
+>>>>>>> first commit
 
 const show = ref(false)
 
 async function handleLogout() {
+<<<<<<< HEAD
   await authStore.removeToken()
+=======
+  authStore.removeToken()
+  router.go(0)
+>>>>>>> first commit
 }
 </script>
 
