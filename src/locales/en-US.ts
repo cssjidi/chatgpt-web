@@ -76,7 +76,10 @@ export default {
     reverseProxy: 'Reverse Proxy',
     timeout: 'Timeout(ms)',
     socks: 'Socks',
+<<<<<<< HEAD
     socksAuth: 'Socks Auth',
+=======
+>>>>>>> first commit
     httpsProxy: 'HTTPS Proxy',
     balance: 'API Balance',
     smtpHost: 'Host',

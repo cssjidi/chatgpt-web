@@ -1,10 +1,17 @@
 <script setup lang='ts'>
 import type { Ref } from 'vue'
+<<<<<<< HEAD
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import type { MessageReactive } from 'naive-ui'
 import { NAutoComplete, NButton, NInput, NSpin, useDialog, useMessage } from 'naive-ui'
+=======
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { storeToRefs } from 'pinia'
+import { NAutoComplete, NButton, NInput, useDialog, useMessage } from 'naive-ui'
+>>>>>>> first commit
 import html2canvas from 'html2canvas'
 import { Message } from './components'
 import { useScroll } from './hooks/useScroll'
@@ -17,7 +24,10 @@ import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { useChatStore, usePromptStore } from '@/store'
 import { fetchChatAPIProcess } from '@/api'
 import { t } from '@/locales'
+<<<<<<< HEAD
 import { debounce } from '@/utils/functions/debounce'
+=======
+>>>>>>> first commit
 
 let controller = new AbortController()
 
@@ -33,7 +43,11 @@ useCopyCode()
 
 const { isMobile } = useBasicLayout()
 const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
+<<<<<<< HEAD
 const { scrollRef, scrollToBottom, scrollToBottomIfAtBottom, scrollTo } = useScroll()
+=======
+const { scrollRef, scrollToBottom, scrollToBottomIfAtBottom } = useScroll()
+>>>>>>> first commit
 const { usingContext, toggleUsingContext } = useUsingContext()
 
 const { uuid } = route.params as { uuid: string }
@@ -42,6 +56,7 @@ const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
 const conversationList = computed(() => dataSources.value.filter(item => (!item.inversion && !item.error)))
 
 const prompt = ref<string>('')
+<<<<<<< HEAD
 const firstLoading = ref<boolean>(false)
 const loading = ref<boolean>(false)
 const inputRef = ref<Ref | null>(null)
@@ -50,6 +65,11 @@ let loadingms: MessageReactive
 let allmsg: MessageReactive
 let prevScrollTop: number
 
+=======
+const loading = ref<boolean>(false)
+const inputRef = ref<Ref | null>(null)
+
+>>>>>>> first commit
 // 添加PromptStore
 const promptStore = usePromptStore()
 
@@ -68,7 +88,14 @@ function handleSubmit() {
 
 async function onConversation() {
   let message = prompt.value
+<<<<<<< HEAD
 
+=======
+  const userStore = useUserStore()
+  userStore.updateUserInfo(false, {
+    score: 3,
+  })
+>>>>>>> first commit
   if (loading.value)
     return
 
@@ -143,7 +170,11 @@ async function onConversation() {
                 text: lastText + data.text ?? '',
                 inversion: false,
                 error: false,
+<<<<<<< HEAD
                 loading: true,
+=======
+                loading: false,
+>>>>>>> first commit
                 conversationOptions: { conversationId: data.conversationId, parentMessageId: data.id },
                 requestOptions: { prompt: message, options: { ...options } },
               },
@@ -159,11 +190,18 @@ async function onConversation() {
             scrollToBottomIfAtBottom()
           }
           catch (error) {
+<<<<<<< HEAD
             //
           }
         },
       })
       updateChatSome(+uuid, dataSources.value.length - 1, { loading: false })
+=======
+          //
+          }
+        },
+      })
+>>>>>>> first commit
     }
 
     await fetchChatAPIOnce()
@@ -277,7 +315,11 @@ async function onRegenerate(index: number) {
                 text: lastText + data.text ?? '',
                 inversion: false,
                 error: false,
+<<<<<<< HEAD
                 loading: true,
+=======
+                loading: false,
+>>>>>>> first commit
                 conversationOptions: { conversationId: data.conversationId, parentMessageId: data.id },
                 requestOptions: { prompt: message, ...options },
               },
@@ -295,7 +337,10 @@ async function onRegenerate(index: number) {
           }
         },
       })
+<<<<<<< HEAD
       updateChatSome(+uuid, index, { loading: false })
+=======
+>>>>>>> first commit
     }
     await fetchChatAPIOnce()
   }
@@ -426,6 +471,7 @@ function handleStop() {
   }
 }
 
+<<<<<<< HEAD
 async function loadMoreMessage(event: any) {
   const chatIndex = chatStore.chat.findIndex(d => d.uuid === +uuid)
   if (chatIndex <= -1)
@@ -460,6 +506,8 @@ async function handleScroll(event: any) {
   prevScrollTop = scrollTop
 }
 
+=======
+>>>>>>> first commit
 // 可优化部分
 // 搜索选项计算，这里使用value作为索引项，所以当出现重复value时渲染异常(多项同时出现选中效果)
 // 理想状态下其实应该是key作为索引项,但官方的renderOption会出现问题，所以就需要value反renderLabel实现
@@ -504,6 +552,7 @@ const footerClass = computed(() => {
 })
 
 onMounted(() => {
+<<<<<<< HEAD
   firstLoading.value = true
   debounce(() => {
     // 直接刷 极小概率不请求
@@ -514,6 +563,11 @@ onMounted(() => {
         inputRef.value?.focus()
     })
   }, 100)()
+=======
+  scrollToBottom()
+  if (inputRef.value && !isMobile.value)
+    inputRef.value?.focus()
+>>>>>>> first commit
 })
 
 onUnmounted(() => {
@@ -531,12 +585,21 @@ onUnmounted(() => {
       @toggle-using-context="toggleUsingContext"
     />
     <main class="flex-1 overflow-hidden">
+<<<<<<< HEAD
       <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto" @scroll="handleScroll">
+=======
+      <div
+        id="scrollRef"
+        ref="scrollRef"
+        class="h-full overflow-hidden overflow-y-auto"
+      >
+>>>>>>> first commit
         <div
           id="image-wrapper"
           class="w-full max-w-screen-xl m-auto dark:bg-[#101014]"
           :class="[isMobile ? 'p-2' : 'p-4']"
         >
+<<<<<<< HEAD
           <NSpin :show="firstLoading">
             <template v-if="!dataSources.length">
               <div class="flex items-center justify-center mt-4 text-center text-neutral-300">
@@ -568,6 +631,37 @@ onUnmounted(() => {
               </div>
             </template>
           </NSpin>
+=======
+          <template v-if="!dataSources.length">
+            <div class="flex items-center justify-center mt-4 text-center text-neutral-300">
+              <SvgIcon icon="ri:bubble-chart-fill" class="mr-2 text-3xl" />
+              <span>Aha~</span>
+            </div>
+          </template>
+          <template v-else>
+            <div>
+              <Message
+                v-for="(item, index) of dataSources"
+                :key="index"
+                :date-time="item.dateTime"
+                :text="item.text"
+                :inversion="item.inversion"
+                :error="item.error"
+                :loading="item.loading"
+                @regenerate="onRegenerate(index)"
+                @delete="handleDelete(index)"
+              />
+              <div class="sticky bottom-0 left-0 flex justify-center">
+                <NButton v-if="loading" type="warning" @click="handleStop">
+                  <template #icon>
+                    <SvgIcon icon="ri:stop-circle-line" />
+                  </template>
+                  Stop Responding
+                </NButton>
+              </div>
+            </div>
+          </template>
+>>>>>>> first commit
         </div>
       </div>
     </main>
