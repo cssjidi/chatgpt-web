@@ -49,7 +49,6 @@ const options = computed(() => {
       icon: iconRender({ icon: 'ri:delete-bin-line' }),
     },
   ]
-
   if (!props.inversion) {
     common.unshift({
       label: asRawText.value ? t('chat.preview') : t('chat.showRawText'),

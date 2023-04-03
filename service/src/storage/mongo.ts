@@ -137,7 +137,7 @@ export async function createUser(email: string, password: string, score: number)
 
 export async function updateUserInfo(userId: string, user: UserInfo) {
   const result = userCol.updateOne({ _id: new ObjectId(userId) }
-    , { $set: { name: user.name, description: user.description, avatar: user.avatar, score: user.score } })
+    , { $set: { name: user.name, description: user.description, avatar: user.avatar, score: user.score, status: user.status } })
   return result
 }
 

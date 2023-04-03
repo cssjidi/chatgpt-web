@@ -8,6 +8,7 @@ export interface UserInfo {
   description: string
   root: boolean
   score: number
+  status: number
 }
 
 export interface UserState {
@@ -22,6 +23,7 @@ export function defaultSetting(): UserState {
       description: '',
       score: 0,
       root: false,
+      status: 0,
     },
   }
 }

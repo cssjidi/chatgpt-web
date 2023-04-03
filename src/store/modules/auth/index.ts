@@ -49,6 +49,7 @@ export const useAuthStore = defineStore('auth-store', {
         name: decoded.name,
         description: decoded.description,
         score: decoded.score,
+        status: decoded.status,
         root: decoded.root,
       })
       setToken(token)

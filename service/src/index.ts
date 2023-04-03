@@ -212,8 +212,18 @@ router.post('/chat', auth, async (req, res) => {
 })
 
 router.post('/chat-process', [auth, limiter], async (req, res) => {
+  const token = jwt.decode(req.headers.authorization.replace(/^Bearer\s+/, '')) as { userId: string }
+  const user = await getUserById(token.userId)
+  let { status, score } = user
+  score = Math.max(score - 1, 0)
+  if (score === 0) {
+    status = Status.NoScore
+    await updateUserInfo(token.userId, { score, status } as UserInfo)
+    res.send({ status: 'Fail', message: '当前账户没有积分|No points', data: null })
+    return
+  }
+  await updateUserInfo(token.userId, { score, status } as UserInfo)
   res.setHeader('Content-type', 'application/octet-stream')
-
   try {
     const { roomId, uuid, regenerate, prompt, options = {}, systemMessage } = req.body as RequestProps
     const message = regenerate
@@ -229,8 +239,10 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
       },
       systemMessage,
     })
-    if (result.status === 'Success')
+    if (result.status === 'Success') {
+      await updateUserInfo(token.userId, { score, status } as UserInfo)
       await updateChat(message._id, result.data.text, result.data.id)
+    }
   }
   catch (error) {
     res.write(JSON.stringify(error))
@@ -337,6 +349,7 @@ router.post('/user-login', async (req, res) => {
       description: user.description,
       userId: user._id,
       score: user.score,
+      Status: user.status,
       root: username.toLowerCase() === process.env.ROOT_USER,
     }, config.siteConfig.loginSalt.trim())
     res.send({ status: 'Success', message: '登录成功 | Login successfully', data: { token } })
