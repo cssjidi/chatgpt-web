@@ -72,6 +72,12 @@ export function fetchUpdateUserInfo<T = any>(name: string, avatar: string, descr
   return post<T>({
     url: '/user-info',
     data: { name, avatar, description, score },
+
+export function fetchUpdateUserInfo<T = any>(name: string, avatar: string, description: string, score: number) {
+  return post<T>({
+    url: '/user-info',
+    data: { name, avatar, description, score },
+
   })
 }
 
