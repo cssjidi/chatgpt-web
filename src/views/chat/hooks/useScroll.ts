@@ -5,6 +5,10 @@ type ScrollElement = HTMLDivElement | null
 
 interface ScrollReturn {
   scrollRef: Ref<ScrollElement>
+<<<<<<< HEAD
+  scrollTo: (top: number) => Promise<void>
+=======
+>>>>>>> first commit
   scrollToBottom: () => Promise<void>
   scrollToTop: () => Promise<void>
   scrollToBottomIfAtBottom: () => Promise<void>
@@ -13,6 +17,15 @@ interface ScrollReturn {
 export function useScroll(): ScrollReturn {
   const scrollRef = ref<ScrollElement>(null)
 
+<<<<<<< HEAD
+  const scrollTo = async (top: number) => {
+    await nextTick()
+    if (scrollRef.value)
+      scrollRef.value.scrollTop = top
+  }
+
+=======
+>>>>>>> first commit
   const scrollToBottom = async () => {
     await nextTick()
     if (scrollRef.value)
@@ -37,6 +50,10 @@ export function useScroll(): ScrollReturn {
 
   return {
     scrollRef,
+<<<<<<< HEAD
+    scrollTo,
+=======
+>>>>>>> first commit
     scrollToBottom,
     scrollToTop,
     scrollToBottomIfAtBottom,

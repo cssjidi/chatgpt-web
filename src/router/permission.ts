@@ -8,7 +8,11 @@ export function setupPageGuard(router: Router) {
       try {
         const data = await authStore.getSession()
         if (String(data.auth) === 'false' && authStore.token)
+<<<<<<< HEAD
+          await authStore.removeToken()
+=======
           authStore.removeToken()
+>>>>>>> first commit
         if (to.path === '/500')
           next({ name: 'Root' })
         else

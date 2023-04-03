@@ -29,7 +29,11 @@ export const useChatStore = defineStore('chat-store', {
       let uuid = this.active
       this.history = []
       this.chat = []
+<<<<<<< HEAD
+      if (rooms.findIndex((item: { uuid: number | null }) => item.uuid === uuid) <= -1)
+=======
       if (rooms.findIndex((item: { uuid: number | null }) => item.uuid === uuid) <= -1 && rooms.length > 0)
+>>>>>>> first commit
         uuid = null
 
       for (const r of rooms) {
@@ -37,6 +41,55 @@ export const useChatStore = defineStore('chat-store', {
         if (uuid == null)
           uuid = r.uuid
         this.chat.unshift({ uuid: r.uuid, data: [] })
+<<<<<<< HEAD
+      }
+      if (uuid == null) {
+        await this.addHistory({ title: 'New Chat', uuid: Date.now(), isEdit: false })
+      }
+      else {
+        this.active = uuid
+        this.reloadRoute(uuid)
+      }
+      callback && callback()
+    },
+
+    async syncChat(h: Chat.History, lastId?: number, callback?: () => void,
+      callbackForStartRequest?: () => void,
+      callbackForEmptyMessage?: () => void) {
+      if (!h.uuid) {
+        callback && callback()
+        return
+      }
+      const hisroty = this.history.filter(item => item.uuid === h.uuid)[0]
+      if (hisroty === undefined || hisroty.loading || hisroty.all) {
+        // callback && callback()
+        if (hisroty?.all ?? false)
+          callbackForEmptyMessage && callbackForEmptyMessage()
+        return
+      }
+      try {
+        hisroty.loading = true
+        const chatIndex = this.chat.findIndex(item => item.uuid === h.uuid)
+        if (chatIndex <= -1 || this.chat[chatIndex].data.length <= 0 || lastId !== undefined) {
+          callbackForStartRequest && callbackForStartRequest()
+          const chatData = (await fetchGetChatHistory(h.uuid, lastId)).data
+          if (chatData.length <= 0)
+            hisroty.all = true
+
+          if (chatIndex <= -1)
+            this.chat.unshift({ uuid: h.uuid, data: chatData })
+          else
+            this.chat[chatIndex].data.unshift(...chatData)
+        }
+      }
+      finally {
+        hisroty.loading = false
+        if (hisroty.all)
+          callbackForEmptyMessage && callbackForEmptyMessage()
+        this.recordState()
+=======
+        if (uuid === r.uuid)
+          this.syncChat(r, callback)
       }
       if (uuid == null) {
         uuid = Date.now()
@@ -44,7 +97,6 @@ export const useChatStore = defineStore('chat-store', {
       }
       this.active = uuid
       this.reloadRoute(uuid)
-      callback && callback()
     },
 
     async syncChat(h: Chat.History, callback: () => void) {
@@ -52,8 +104,9 @@ export const useChatStore = defineStore('chat-store', {
       if (chatIndex <= -1 || this.chat[chatIndex].data.length <= 0) {
         const chatData = (await fetchGetChatHistory(h.uuid)).data
         this.chat.unshift({ uuid: h.uuid, data: chatData })
+>>>>>>> first commit
+        callback && callback()
       }
-      callback && callback()
     },
 
     setUsingContext(context: boolean) {
@@ -61,8 +114,13 @@ export const useChatStore = defineStore('chat-store', {
       this.recordState()
     },
 
+<<<<<<< HEAD
+    async addHistory(history: Chat.History, chatData: Chat.Chat[] = []) {
+      await fetchCreateChatRoom(history.title, history.uuid)
+=======
     addHistory(history: Chat.History, chatData: Chat.Chat[] = []) {
       fetchCreateChatRoom(history.title, history.uuid)
+>>>>>>> first commit
       this.history.unshift(history)
       this.chat.unshift({ uuid: history.uuid, data: chatData })
       this.active = history.uuid
@@ -80,13 +138,21 @@ export const useChatStore = defineStore('chat-store', {
     },
 
     async deleteHistory(index: number) {
+<<<<<<< HEAD
+      await fetchDeleteChatRoom(this.history[index].uuid)
+=======
       fetchDeleteChatRoom(this.history[index].uuid)
+>>>>>>> first commit
       this.history.splice(index, 1)
       this.chat.splice(index, 1)
 
       if (this.history.length === 0) {
+<<<<<<< HEAD
+        await this.addHistory({ title: 'New Chat', uuid: Date.now(), isEdit: false })
+=======
         this.active = null
         this.reloadRoute()
+>>>>>>> first commit
         return
       }
 
@@ -232,11 +298,19 @@ export const useChatStore = defineStore('chat-store', {
       }
     },
 
+<<<<<<< HEAD
+    async clearLocalChat() {
+=======
     clearLocalChat() {
+>>>>>>> first commit
       this.chat = []
       this.history = []
       this.active = null
       this.recordState()
+<<<<<<< HEAD
+      await router.push({ name: 'Chat' })
+=======
+>>>>>>> first commit
     },
 
     async reloadRoute(uuid?: number) {

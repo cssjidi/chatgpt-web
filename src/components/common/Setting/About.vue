@@ -99,6 +99,15 @@ onMounted(() => {
           </div>
         </div>
         <div class="flex items-center space-x-4">
+<<<<<<< HEAD
+          <span class="flex-shrink-0 w-[100px]">{{ $t('setting.socksAuth') }}</span>
+          <div class="flex-1">
+            <NInput :value="config && config.socksAuth" placeholder="name:pasword" @input="(val) => { if (config) config.socksAuth = val }" />
+          </div>
+        </div>
+        <div class="flex items-center space-x-4">
+=======
+>>>>>>> first commit
           <span class="flex-shrink-0 w-[100px]">{{ $t('setting.httpsProxy') }}</span>
           <div class="flex-1">
             <NInput :value="config && config.httpsProxy" placeholder="" @input="(val) => { if (config) config.httpsProxy = val }" />

@@ -28,10 +28,15 @@ function http<T = any>(
     if (res.data.status === 'Success' || typeof res.data === 'string')
       return res.data
 
+<<<<<<< HEAD
+    if (res.data.status === 'Unauthorized')
+      authStore.removeToken()
+=======
     if (res.data.status === 'Unauthorized') {
       authStore.removeToken()
       window.location.reload()
     }
+>>>>>>> first commit
 
     return Promise.reject(res.data)
   }

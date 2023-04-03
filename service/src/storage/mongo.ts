@@ -1,7 +1,8 @@
+import * as dotenv from 'dotenv'
 import { MongoClient, ObjectId } from 'mongodb'
 import { ChatInfo, ChatRoom, Status, UserInfo } from './model'
 import type { ChatOptions, Config } from './model'
-
+dotenv.config()
 const url = process.env.MONGODB_URL
 const client = new MongoClient(url)
 const chatCol = client.db('chatgpt').collection('chat')
@@ -73,12 +74,12 @@ export async function deleteAllChatRooms(userId: string) {
   await chatCol.updateMany({ userId, status: Status.Normal }, { $set: { status: Status.Deleted } })
 }
 
-export async function getChats(roomId: number, lastTime?: number) {
-  if (!lastTime)
-    lastTime = new Date().getTime()
-  const query = { roomId, dateTime: { $lt: lastTime }, status: { $ne: Status.Deleted } }
+export async function getChats(roomId: number, lastId?: number) {
+  if (!lastId)
+    lastId = new Date().getTime()
+  const query = { roomId, uuid: { $lt: lastId }, status: { $ne: Status.Deleted } }
   const sort = { dateTime: -1 }
-  const limit = 200
+  const limit = 20
   const cursor = await chatCol.find(query).sort(sort).limit(limit)
   const chats = []
   await cursor.forEach(doc => chats.push(doc))
@@ -123,9 +124,9 @@ export async function deleteChat(roomId: number, uuid: number, inversion: boolea
   chatCol.updateOne(query, update)
 }
 
-export async function createUser(email: string, password: string): Promise<UserInfo> {
+export async function createUser(email: string, password: string, score: number): Promise<UserInfo> {
   email = email.toLowerCase()
-  const userInfo = new UserInfo(email, password)
+  const userInfo = new UserInfo(email, password, score)
   if (email === process.env.ROOT_USER)
     userInfo.status = Status.Normal
 
@@ -135,7 +136,7 @@ export async function createUser(email: string, password: string): Promise<UserI
 
 export async function updateUserInfo(userId: string, user: UserInfo) {
   const result = userCol.updateOne({ _id: new ObjectId(userId) }
-    , { $set: { name: user.name, description: user.description, avatar: user.avatar } })
+    , { $set: { name: user.name, description: user.description, avatar: user.avatar, score: user.score } })
   return result
 }
 
@@ -148,9 +149,9 @@ export async function getUserById(userId: string): Promise<UserInfo> {
   return await userCol.findOne({ _id: new ObjectId(userId) }) as UserInfo
 }
 
-export async function verifyUser(email: string) {
+export async function verifyUser(email: string, score?: number) {
   email = email.toLowerCase()
-  return await userCol.updateOne({ email }, { $set: { status: Status.Normal, verifyTime: new Date().toLocaleString() } })
+  return await userCol.updateOne({ email }, { $set: { status: Status.Normal, verifyTime: new Date().toLocaleString(), score } })
 }
 
 export async function getConfig(): Promise<Config> {

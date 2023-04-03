@@ -48,17 +48,29 @@ export const useAuthStore = defineStore('auth-store', {
         avatar: decoded.avatar,
         name: decoded.name,
         description: decoded.description,
+<<<<<<< HEAD
+=======
+        score: decoded.score,
+>>>>>>> first commit
         root: decoded.root,
       })
       setToken(token)
     },
 
+<<<<<<< HEAD
+    async removeToken() {
+=======
     removeToken() {
+>>>>>>> first commit
       this.token = undefined
       const userStore = useUserStore()
       userStore.resetUserInfo()
       const chatStore = useChatStore()
+<<<<<<< HEAD
+      await chatStore.clearLocalChat()
+=======
       chatStore.clearLocalChat()
+>>>>>>> first commit
       removeToken()
     },
   },

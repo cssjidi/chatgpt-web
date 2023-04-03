@@ -15,6 +15,11 @@ declare namespace Chat {
 		title: string
 		isEdit: boolean
 		uuid: number
+<<<<<<< HEAD
+		loading?: boolean
+		all?: boolean
+=======
+>>>>>>> first commit
 	}
 
 	interface ChatState {

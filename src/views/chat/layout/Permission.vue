@@ -57,7 +57,10 @@ async function handleVerify(verifytoken: string) {
   }
   catch (error: any) {
     ms.error(error.message ?? 'error')
+<<<<<<< HEAD
+=======
     authStore.removeToken()
+>>>>>>> first commit
   }
   finally {
     loading.value = false
@@ -87,7 +90,10 @@ async function handleLogin() {
   }
   catch (error: any) {
     ms.error(error.message ?? 'error')
+<<<<<<< HEAD
+=======
     authStore.removeToken()
+>>>>>>> first commit
     password.value = ''
   }
   finally {
@@ -135,7 +141,11 @@ async function handleRegister() {
 
         <!-- Add Tabs -->
         <NTabs v-model:value="activeTab" type="line">
+<<<<<<< HEAD
+          <NTabPane name="login" :tab="$t('common.login')">
+=======
           <NTabPane name="login" :label="$t('common.login')">
+>>>>>>> first commit
             <NInput v-model:value="username" type="text" :placeholder="$t('common.email')" class="mb-2" />
             <NInput v-model:value="password" type="password" :placeholder="$t('common.password')" class="mb-2" @keypress="handlePress" />
 
@@ -144,7 +154,11 @@ async function handleRegister() {
             </NButton>
           </NTabPane>
 
+<<<<<<< HEAD
+          <NTabPane v-if="authStore.session && authStore.session.allowRegister" name="register" :tab="$t('common.register')">
+=======
           <NTabPane v-if="authStore.session && authStore.session.allowRegister" name="register" :label="$t('common.register')">
+>>>>>>> first commit
             <NInput v-model:value="username" type="text" :placeholder="$t('common.email')" class="mb-2" />
             <NInput v-model:value="password" type="password" :placeholder="$t('common.password')" class="mb-2" @input="handlePasswordInput" />
             <NInput
