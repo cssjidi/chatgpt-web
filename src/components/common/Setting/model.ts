@@ -6,10 +6,7 @@ export class ConfigState {
   apiModel?: string
   reverseProxy?: string
   socksProxy?: string
-<<<<<<< HEAD
   socksAuth?: string
-=======
->>>>>>> first commit
   httpsProxy?: string
   balance?: number
   siteConfig?: SiteConfig

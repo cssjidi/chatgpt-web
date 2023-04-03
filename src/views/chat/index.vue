@@ -512,7 +512,12 @@ onMounted(() => {
       if (inputRef.value && !isMobile.value)
         inputRef.value?.focus()
     })
-  }, 200)()
+  }, 100)()
+=======
+  scrollToBottom()
+  if (inputRef.value && !isMobile.value)
+    inputRef.value?.focus()
+>>>>>>> first commit
 })
 
 onUnmounted(() => {

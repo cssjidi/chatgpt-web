@@ -7,10 +7,7 @@ export interface UserInfo {
   name: string
   description: string
   root: boolean
-<<<<<<< HEAD
-=======
   score: number
->>>>>>> first commit
 }
 
 export interface UserState {
@@ -23,10 +20,7 @@ export function defaultSetting(): UserState {
       avatar: '',
       name: '',
       description: '',
-<<<<<<< HEAD
-=======
       score: 0,
->>>>>>> first commit
       root: false,
     },
   }

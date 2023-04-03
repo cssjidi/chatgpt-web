@@ -76,10 +76,7 @@ export default {
     reverseProxy: '反向代理',
     timeout: '超时(ms)',
     socks: 'Socks',
-<<<<<<< HEAD
     socksAuth: 'Socks 授权',
-=======
->>>>>>> first commit
     httpsProxy: 'HTTPS Proxy',
     balance: 'API余额',
     smtpHost: 'Host',
