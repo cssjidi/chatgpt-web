@@ -333,6 +333,7 @@ router.post('/user-login', async (req, res) => {
       avatar: user.avatar,
       description: user.description,
       userId: user._id,
+      score: user.score,
       root: username.toLowerCase() === process.env.ROOT_USER,
     }, config.siteConfig.loginSalt.trim())
     res.send({ status: 'Success', message: '登录成功 | Login successfully', data: { token } })

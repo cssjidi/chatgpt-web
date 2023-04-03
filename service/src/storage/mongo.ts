@@ -1,7 +1,8 @@
+import * as dotenv from 'dotenv'
 import { MongoClient, ObjectId } from 'mongodb'
 import { ChatInfo, ChatRoom, Status, UserInfo } from './model'
 import type { ChatOptions, Config } from './model'
-
+dotenv.config()
 const url = process.env.MONGODB_URL
 const client = new MongoClient(url)
 const chatCol = client.db('chatgpt').collection('chat')
@@ -135,7 +136,7 @@ export async function createUser(email: string, password: string, score: number)
 
 export async function updateUserInfo(userId: string, user: UserInfo) {
   const result = userCol.updateOne({ _id: new ObjectId(userId) }
-    , { $set: { name: user.name, description: user.description, avatar: user.avatar } })
+    , { $set: { name: user.name, description: user.description, avatar: user.avatar, score: user.score } })
   return result
 }
 
