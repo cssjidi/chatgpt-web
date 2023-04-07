@@ -219,10 +219,9 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
   if (score === 0) {
     status = Status.NoScore
     await updateUserInfo(token.userId, { score, status } as UserInfo)
-    res.send({ status: 'Fail', message: '当前账户没有积分|No points', data: null })
+    res.send({ id: '200', text: '当前账户没有积分|No points', parentMessageId: '200' })
     return
   }
-  await updateUserInfo(token.userId, { score, status } as UserInfo)
   res.setHeader('Content-type', 'application/octet-stream')
   try {
     const { roomId, uuid, regenerate, prompt, options = {}, systemMessage } = req.body as RequestProps
@@ -285,7 +284,7 @@ router.post('/user-register', async (req, res) => {
       return
     }
     const newPassword = md5(password)
-    await createUser(username, newPassword)
+    await createUser(username, newPassword, 10)
 
     if (username.toLowerCase() === process.env.ROOT_USER) {
       res.send({ status: 'Success', message: '注册成功 | Register success', data: null })
