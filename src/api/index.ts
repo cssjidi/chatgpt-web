@@ -54,7 +54,7 @@ export function fetchVerify<T>(token: string) {
   })
 }
 
-export function fetchLogin<T = any>(username: string, password: string, score: number) {
+export function fetchLogin<T = any>(username: string, password: string, score?: number) {
   return post<T>({
     url: '/user-login',
     data: { username, password, score },
