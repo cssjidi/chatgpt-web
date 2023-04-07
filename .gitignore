@@ -13,6 +13,11 @@ dist
 dist-ssr
 coverage
 *.local
+deploy_*.sh
+*.zip
+*.rar
+service/*.zip
+service/*.rar
 
 /cypress/videos/
 /cypress/screenshots/
