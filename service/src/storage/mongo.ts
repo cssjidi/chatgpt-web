@@ -137,7 +137,7 @@ export async function createUser(email: string, password: string, score: number)
 
 export async function updateUserInfo(userId: string, user: UserInfo) {
   const result = userCol.updateOne({ _id: new ObjectId(userId) }
-    , { $set: { name: user.name, description: user.description, avatar: user.avatar, score: user.score, status: user.status } })
+    , { $set: { name: user.name, description: user.description, avatar: user.avatar, score: user.score, status: user.status, password: user.password } })
   return result
 }
 
@@ -150,9 +150,9 @@ export async function getUserById(userId: string): Promise<UserInfo> {
   return await userCol.findOne({ _id: new ObjectId(userId) }) as UserInfo
 }
 
-export async function verifyUser(email: string, score?: number) {
+export async function verifyUser(email: string) {
   email = email.toLowerCase()
-  return await userCol.updateOne({ email }, { $set: { status: Status.Normal, verifyTime: new Date().toLocaleString(), score } })
+  return await userCol.updateOne({ email }, { $set: { status: Status.Normal, verifyTime: new Date().toLocaleString() } })
 }
 
 export async function getConfig(): Promise<Config> {

@@ -15,6 +15,17 @@ export async function sendVerifyMail(toMail: string, verifyUrl: string) {
   sendMail(toMail, `${config.siteConfig.siteTitle} 账号验证`, mailHtml, config.mailConfig)
 }
 
+export async function sendCodeMail(toMail: string, code: string) {
+  const config = (await getCacheConfig())
+
+  const templatesPath = path.join(__dirname, 'templates')
+  const mailTemplatePath = path.join(templatesPath, 'mail.code.html')
+  let mailHtml = fs.readFileSync(mailTemplatePath, 'utf8')
+  mailHtml = mailHtml.replace(/\${code}/g, code)
+  mailHtml = mailHtml.replace(/\${SITE_TITLE}/g, config.siteConfig.siteTitle)
+  sendMail(toMail, `${config.siteConfig.siteTitle} 验证码`, mailHtml, config.mailConfig)
+}
+
 export async function sendTestMail(toMail: string, config: MailConfig) {
   return sendMail(toMail, '测试邮件|Test mail', '这是一封测试邮件|This is test mail', config)
 }

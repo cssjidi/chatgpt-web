@@ -1,6 +1,7 @@
 import express from 'express'
 import jwt from 'jsonwebtoken'
 import * as dotenv from 'dotenv'
+import { v4 as uuidv4 } from 'uuid'
 import type { RequestProps } from './types'
 import type { ChatContext, ChatMessage } from './chatgpt'
 import { chatConfig, chatReplyProcess, currentModel, initApi } from './chatgpt'
@@ -11,7 +12,7 @@ import { Status } from './storage/model'
 import { clearChat, createChatRoom, createUser, deleteAllChatRooms, deleteChat, deleteChatRoom, existsChatRoom, getChat, getChatRooms, getChats, getUser, getUserById, insertChat, renameChatRoom, updateChat, updateConfig, updateUserInfo, verifyUser } from './storage/mongo'
 import { limiter } from './middleware/limiter'
 import { isEmail, isNotEmptyString } from './utils/is'
-import { sendTestMail, sendVerifyMail } from './utils/mail'
+import { sendCodeMail, sendTestMail, sendVerifyMail } from './utils/mail'
 import { checkUserVerify, getUserVerifyUrl, md5 } from './utils/security'
 import { rootAuth } from './middleware/rootAuth'
 
@@ -19,6 +20,8 @@ dotenv.config()
 
 const app = express()
 const router = express.Router()
+
+const correctCodes = new Map<string, string>()
 
 app.use(express.static('public'))
 app.use(express.json())
@@ -216,7 +219,7 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
   const user = await getUserById(token.userId)
   let { status, score } = user
   score = Math.max(score - 1, 0)
-  if (score === 0) {
+  if (score === 0 && user.email.toLowerCase() !== process.env.ROOT_USER) {
     status = Status.NoScore
     await updateUserInfo(token.userId, { score, status } as UserInfo)
     res.send({ id: '200', text: '当前账户没有积分|No points', parentMessageId: '200' })
@@ -283,7 +286,7 @@ router.post('/user-register', async (req, res) => {
       res.send({ status: 'Fail', message: '邮箱已存在 | The email exists', data: null })
       return
     }
-    const newPassword = md5(password)
+    const newPassword = md5(password + process.env.PASSWORD_MD5_SALT)
     await createUser(username, newPassword, 10)
 
     if (username.toLowerCase() === process.env.ROOT_USER) {
@@ -331,16 +334,21 @@ router.post('/user-login', async (req, res) => {
   try {
     const { username, password } = req.body as { username: string; password: string }
     if (!username || !password || !isEmail(username))
-      throw new Error('用户名或密码为空 | Username or password is empty')
+      throw new Error('哎呀，好像出了一些问题！请检查您的用户名和密码是否正确。')
 
     const user = await getUser(username)
-    if (user == null
-      || user.status !== Status.Normal
-      || user.password !== md5(password)) {
-      if (user != null && user.status === Status.PreVerify)
-        throw new Error('请去邮箱中验证 | Please verify in the mailbox')
-      throw new Error('用户不存在或密码错误 | User does not exist or incorrect password.')
-    }
+    // 将不允许登录的用户状态存储到数组中
+    const disallowedStatus = [Status.Deleted, Status.InversionDeleted, Status.ResponseDeleted]
+    // 检查当前用户是否可以登录
+    if (!user || user.password !== md5(password + process.env.PASSWORD_MD5_SALT))
+      throw new Error('哎呀，好像出了一些问题！请检查您的用户名和密码是否正确。')
+    else if (disallowedStatus.includes(user.status))
+      throw new Error('用户无法登录，请联系管理员')
+    else if (user.status === Status.PreVerify)
+      throw new Error('请去邮箱中验证')
+    else if (user.status === Status.AdminVerify)
+      throw new Error('请等待管理员开通')
+
     const config = await getCacheConfig()
     const token = jwt.sign({
       name: user.name ? user.name : user.email,
@@ -351,7 +359,7 @@ router.post('/user-login', async (req, res) => {
       Status: user.status,
       root: username.toLowerCase() === process.env.ROOT_USER,
     }, config.siteConfig.loginSalt.trim())
-    res.send({ status: 'Success', message: '登录成功 | Login successfully', data: { token } })
+    res.send({ status: 'Success', message: '登录成功', data: { token } })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
@@ -452,6 +460,41 @@ router.post('/mail-test', rootAuth, async (req, res) => {
     const user = await getUserById(userId)
     await sendTestMail(user.email, config)
     res.send({ status: 'Success', message: '发送成功 | Successfully', data: null })
+  }
+  catch (error) {
+    res.send({ status: 'Fail', message: error.message, data: null })
+  }
+})
+
+// 发送验证码接口
+app.post('/send-code', async (req, res) => {
+  const { email } = req.body
+  // 生成验证码
+  const code = uuidv4().substr(0, 6)
+  // 发送邮件
+  // 存储正确的验证码
+  correctCodes.set(email, code)
+  sendCodeMail(email, code)
+  res.send({ status: 'Success', message: '验证码发送成功，请到邮箱查看验证码' })
+})
+
+// 修改密码接口
+app.post('/reset-password', async (req, res) => {
+  try {
+    const { email, password, code } = req.body
+    const correctCode = correctCodes.get(email)
+    if (correctCode !== code) {
+      res.send({ status: 'Fail', message: '验证码不正确' })
+      return
+    }
+    const user = await getUser(email)
+    if (user == null || user.status === Status.PreVerify) {
+      res.send({ status: 'Fail', message: '用户不存在或账户未激活' })
+      return
+    }
+    const newPassword = md5(password + process.env.PASSWORD_MD5_SALT)
+    await updateUserInfo(user._id, { password: newPassword } as UserInfo)
+    res.send({ status: 'Success', message: '更改成功 | Update successfully' })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })

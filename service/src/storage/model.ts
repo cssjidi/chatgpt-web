@@ -6,7 +6,8 @@ export enum Status {
   InversionDeleted = 2,
   ResponseDeleted = 3,
   PreVerify = 4,
-  NoScore = 5,
+  AdminVerify = 5,
+  NoScore = 6,
 }
 
 export class UserInfo {

@@ -18,6 +18,8 @@ deploy_*.sh
 *.rar
 service/*.zip
 service/*.rar
+.env
+.env*
 
 /cypress/videos/
 /cypress/screenshots/

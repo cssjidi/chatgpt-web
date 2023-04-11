@@ -156,3 +156,17 @@ export function fetchUpdateBaseSetting<T = any>(config: ConfigState) {
     data: config,
   })
 }
+
+export function sendCodeByMail<T = any>(email: string) {
+  return post<T>({
+    url: '/send-code',
+    data: { email },
+  })
+}
+
+export function resetPassword<T = any>(email: string, code: string, password: string) {
+  return post<T>({
+    url: '/reset-password',
+    data: { email, password, code },
+  })
+}

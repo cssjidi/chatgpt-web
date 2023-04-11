@@ -115,6 +115,8 @@ async function handleRegister() {
     loading.value = false
   }
 }
+
+const gotoForgotPassword = () => router.push('/forgot-password')
 </script>
 
 <template>
@@ -123,10 +125,10 @@ async function handleRegister() {
       <div class="space-y-4">
         <header class="space-y-2">
           <h2 class="text-2xl font-bold text-center text-slate-800 dark:text-neutral-200">
-            403
+            很高兴见到您！
           </h2>
           <p class="text-base text-center text-slate-500 dark:text-slate-500">
-            {{ $t('common.unauthorizedTips') }}
+            现在就登录/注册并探索51chat的神奇世界吧！
           </p>
           <Icon403 class="w-[200px] m-auto" />
         </header>
@@ -136,7 +138,7 @@ async function handleRegister() {
           <NTabPane name="login" :tab="$t('common.login')">
             <NInput v-model:value="username" type="text" :placeholder="$t('common.email')" class="mb-2" />
             <NInput v-model:value="password" type="password" :placeholder="$t('common.password')" class="mb-2" @keypress="handlePress" />
-
+            <a href="javascript:void(0)" @click="gotoForgotPassword">忘记密码?</a>
             <NButton block type="primary" :disabled="disabled" :loading="loading" @click="handleLogin">
               {{ $t('common.login') }}
             </NButton>
