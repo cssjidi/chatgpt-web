@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import * as dotenv from 'dotenv'
+import * as dotenv from 'dotenv-flow'
 import { Status } from '../storage/model'
 import { getUserById } from '../storage/mongo'
 import { getCacheConfig } from '../storage/config'

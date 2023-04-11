@@ -1,9 +1,10 @@
-import * as dotenv from 'dotenv'
+import * as dotenv from 'dotenv-flow'
 import { MongoClient, ObjectId } from 'mongodb'
 import { ChatInfo, ChatRoom, Status, UserInfo } from './model'
 import type { ChatOptions, Config } from './model'
 
 dotenv.config()
+console.log(process.env.MONGODB_URL)
 const url = process.env.MONGODB_URL
 const client = new MongoClient(url)
 const chatCol = client.db('chatgpt').collection('chat')

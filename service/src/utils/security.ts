@@ -1,5 +1,5 @@
 import { createHash } from 'crypto'
-import * as dotenv from 'dotenv'
+import * as dotenv from 'dotenv-flow'
 import { getCacheConfig } from '../storage/config'
 
 dotenv.config()

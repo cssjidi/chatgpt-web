@@ -1,5 +1,5 @@
 import { rateLimit } from 'express-rate-limit'
-import * as dotenv from 'dotenv'
+import * as dotenv from 'dotenv-flow'
 import { isNotEmptyString } from '../utils/is'
 
 dotenv.config()

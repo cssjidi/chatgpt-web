@@ -17,6 +17,7 @@ deploy_*.sh
 *.zip
 *.rar
 service/*.zip
+service/.history
 service/*.rar
 .env
 .env*

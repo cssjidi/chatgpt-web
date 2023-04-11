@@ -1,6 +1,6 @@
 import express from 'express'
 import jwt from 'jsonwebtoken'
-import * as dotenv from 'dotenv'
+import * as dotenv from 'dotenv-flow'
 import { v4 as uuidv4 } from 'uuid'
 import type { RequestProps } from './types'
 import type { ChatContext, ChatMessage } from './chatgpt'
