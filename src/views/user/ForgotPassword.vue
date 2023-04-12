@@ -70,7 +70,7 @@ const sendCode = async () => {
 
 const validateForm = () => {
   const form = formRef
-  form.value && form.value.validate((valid: boolean) => {
+  form.value && form.value.validate && form.value.validate((valid: boolean) => {
     isValidForm.value = valid
   })
 }
