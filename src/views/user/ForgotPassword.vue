@@ -40,11 +40,13 @@ const rules: FormRules = {
   confirmPassword: [
     { required: true, message: '请再次输入新密码', trigger: 'blur' },
     {
-      validator: (rule, value, callback) => {
-        if (value !== form.value.password)
-          callback(new Error('两次密码输入不一致'))
-        else
-          callback()
+      validator: (rule: FormItemRule, value: string) => {
+        return new Promise<void>((resolve, reject) => {
+          if (value !== form.value.password)
+            reject(Error('两次密码输入不一致')) // reject with error message
+          else
+            resolve()
+        })
       },
       trigger: 'blur',
     },
@@ -72,7 +74,7 @@ const validateForm = () => {
   formRef.value?.validate((errors) => {
     if (errors)
       console.error(errors)
-    isValidForm.value = valid
+    isValidForm.value = true
   })
 }
 
