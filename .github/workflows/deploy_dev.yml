@@ -5,7 +5,7 @@ on:
     branches: [fallback]
 jobs:
   lint:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -14,9 +14,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 16.x
-
-      - name: Create Server Directory
-        run: sudo mkdir -p /www/wwwroot/demo-server
 
       - name: Install Dependencies and Start Backend
         run: |
@@ -34,9 +31,6 @@ jobs:
           SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           MONGODB_URL: ${{ secrets.MONGODB_URL }}
-
-      - name: Create client Directory
-        run: sudo mkdir -p /www/wwwroot/demo-client
 
       - name: Build Frontend
         run: |
