@@ -1,7 +1,6 @@
 <script lang="ts" setup>
-import type { ComponentInternalInstance } from 'vue'
+import type { FormInst, FormRules } from 'naive-ui'
 import { ref } from 'vue'
-import type { FormRules } from 'naive-ui'
 import { NButton, NCard, NForm, NFormItem, NInput, useMessage } from 'naive-ui'
 import { useRouter } from 'vue-router'
 import { resetPassword, sendCodeByMail } from '@/api'
@@ -13,7 +12,7 @@ const form = ref({
   password: '',
   confirmPassword: '',
 })
-const formRef = ref<ComponentInternalInstance>()
+const formRef = ref<FormInst | null>(null)
 const formValid = false
 const router = useRouter()
 const authStore = useAuthStore()
@@ -70,8 +69,9 @@ const sendCode = async () => {
 }
 
 const validateForm = () => {
-  const form = formRef.value
-  form && form.validate && form.validate((valid: boolean) => {
+  formRef.value?.validate((errors) => {
+    if (errors)
+      console.error(errors)
     isValidForm.value = valid
   })
 }
