@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { FormInst, FormRules } from 'naive-ui'
+import type { FormInst, FormItemRule, FormRules } from 'naive-ui'
 import { ref } from 'vue'
 import { NButton, NCard, NForm, NFormItem, NInput, useMessage } from 'naive-ui'
 import { useRouter } from 'vue-router'
