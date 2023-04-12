@@ -39,6 +39,7 @@ jobs:
       - name: start Server
         run: |
           npm start
+        working-directory: ./demo-server
 
       - name: Create client Directory
         run: mkdir -p ./demo-client
