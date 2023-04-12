@@ -38,7 +38,7 @@ jobs:
 
       - name: start Server
         run: |
-          npm start
+          pwd && npm start
         working-directory: ./demo-server
 
       - name: Create client Directory
