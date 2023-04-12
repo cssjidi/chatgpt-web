@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { ComponentInternalInstance } from 'vue'
 import { ref } from 'vue'
 import type { FormRules } from 'naive-ui'
 import { NButton, NCard, NForm, NFormItem, NInput, useMessage } from 'naive-ui'
@@ -12,7 +13,7 @@ const form = ref({
   password: '',
   confirmPassword: '',
 })
-const formRef = ref(null)
+const formRef = ref<ComponentInternalInstance>()
 const formValid = false
 const router = useRouter()
 const authStore = useAuthStore()
@@ -44,7 +45,7 @@ const rules: FormRules = {
         if (value !== form.value.password)
           callback(new Error('两次密码输入不一致'))
         else
-          callback(undefined)
+          callback()
       },
       trigger: 'blur',
     },
@@ -69,8 +70,8 @@ const sendCode = async () => {
 }
 
 const validateForm = () => {
-  const form = formRef
-  form.value && form.value.validate && form.value.validate((valid: boolean) => {
+  const form = formRef.value
+  form && form.validate && form.validate((valid: boolean) => {
     isValidForm.value = valid
   })
 }
