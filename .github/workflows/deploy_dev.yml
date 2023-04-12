@@ -17,13 +17,10 @@ jobs:
         with:
           node-version: 16.x
 
-      - name: Create Server Directory
-        run: mkdir -p ./demo-server
-
       - name: Install Dependencies and Start Backend
         run: |
           npm install
-        working-directory: ./demo-server
+
         env:
           OPENAI_API_KEY: ${{ env.OPENAI_API_KEY }}
           AUTH_SECRET_KEY: ${{ env.AUTH_SECRET_KEY }}
@@ -39,13 +36,8 @@ jobs:
       - name: start Server
         run: |
           pwd && npm start
-        working-directory: ./demo-server
-
-      - name: Create client Directory
-        run: mkdir -p ./demo-client
 
       - name: Build Frontend
         run: |
           npm install
           npm run build
-        working-directory: ./demo-client
