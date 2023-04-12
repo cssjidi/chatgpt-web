@@ -23,7 +23,6 @@ jobs:
       - name: Install Dependencies and Start Backend
         run: |
           npm install
-          esno ./src/index.ts
         working-directory: ./demo-server
         env:
           OPENAI_API_KEY: ${{ env.OPENAI_API_KEY }}
@@ -36,6 +35,10 @@ jobs:
           SMTP_USERNAME: ${{ env.SMTP_USERNAME }}
           SMTP_PASSWORD: ${{ env.SMTP_PASSWORD }}
           MONGODB_URL: ${{ env.MONGODB_URL }}
+
+      - name: start Server
+        run: |
+          npm start
 
       - name: Create client Directory
         run: mkdir -p ./demo-client
