@@ -3,9 +3,11 @@ name: Deploy to development
 on:
   push:
     branches: [fallback]
+
 jobs:
-  lint:
+  build:
     runs-on: ubuntu-latest
+    environment: development
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -24,16 +26,16 @@ jobs:
           esno ./src/index.ts
         working-directory: ./demo-server
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          AUTH_SECRET_KEY: ${{ secrets.AUTH_SECRET_KEY }}
-          SITE_DOMAIN: ${{ secrets.SITE_DOMAIN }}
-          PASSWORD_MD5_SALT: ${{ secrets.PASSWORD_MD5_SALT }}
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-          SMTP_TSL: ${{ secrets.SMTP_TSL }}
-          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          MONGODB_URL: ${{ secrets.MONGODB_URL }}
+          OPENAI_API_KEY: ${{ env.OPENAI_API_KEY }}
+          AUTH_SECRET_KEY: ${{ env.AUTH_SECRET_KEY }}
+          SITE_DOMAIN: ${{ env.SITE_DOMAIN }}
+          PASSWORD_MD5_SALT: ${{ env.PASSWORD_MD5_SALT }}
+          SMTP_HOST: ${{ env.SMTP_HOST }}
+          SMTP_PORT: ${{ env.SMTP_PORT }}
+          SMTP_TSL: ${{ env.SMTP_TSL }}
+          SMTP_USERNAME: ${{ env.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ env.SMTP_PASSWORD }}
+          MONGODB_URL: ${{ env.MONGODB_URL }}
 
       - name: Create client Directory
         run: mkdir -p ./demo-client
