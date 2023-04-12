@@ -35,7 +35,7 @@ jobs:
 
       - name: start Server
         run: |
-          pwd && npm start
+          pwd && npm run start
 
       - name: Build Frontend
         run: |
