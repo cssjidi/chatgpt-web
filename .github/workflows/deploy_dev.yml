@@ -16,7 +16,7 @@ jobs:
           node-version: 16.x
 
       - name: Create Server Directory
-        run: mkdir -p /www/wwwroot/demo-server
+        run: sudo mkdir -p /www/wwwroot/demo-server
 
       - name: Install Dependencies and Start Backend
         run: |
@@ -36,7 +36,7 @@ jobs:
           MONGODB_URL: ${{ secrets.MONGODB_URL }}
 
       - name: Create client Directory
-        run: mkdir -p /www/wwwroot/demo-client
+        run: sudo mkdir -p /www/wwwroot/demo-client
 
       - name: Build Frontend
         run: |
