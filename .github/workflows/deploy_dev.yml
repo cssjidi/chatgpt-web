@@ -15,11 +15,14 @@ jobs:
         with:
           node-version: 16.x
 
+      - name: Create Server Directory
+        run: mkdir -p /www/wwwroot/demo-server
+
       - name: Install Dependencies and Start Backend
         run: |
           npm install
           esno ./src/index.ts
-        working-directory: /www/server
+        working-directory: /www/wwwroot/demo-server
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           AUTH_SECRET_KEY: ${{ secrets.AUTH_SECRET_KEY }}
@@ -32,8 +35,11 @@ jobs:
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           MONGODB_URL: ${{ secrets.MONGODB_URL }}
 
+      - name: Create client Directory
+        run: mkdir -p /www/wwwroot/demo-client
+
       - name: Build Frontend
         run: |
           npm install
           npm run build
-        working-directory: /www/client
+        working-directory: /www/wwwroot/demo-client
