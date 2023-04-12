@@ -44,7 +44,7 @@ const rules: FormRules = {
         if (value !== form.value.password)
           callback(new Error('两次密码输入不一致'))
         else
-          callback()
+          callback(undefined)
       },
       trigger: 'blur',
     },
@@ -70,7 +70,7 @@ const sendCode = async () => {
 
 const validateForm = () => {
   const form = formRef
-  form.value.validate((valid: boolean) => {
+  form.value && form.value.validate((valid: boolean) => {
     isValidForm.value = valid
   })
 }
@@ -80,12 +80,12 @@ const handleSubmit = async () => {
   if (formValid)
     submitLoading.value = true
   try {
-    const result = await resetPassword(form.value.email, form.value.code, form.value.password)
-    ms.success(result.message)
+    await resetPassword(form.value.email, form.value.code, form.value.password)
+    ms.success('密码修改成功！')
     await authStore.removeToken()
   }
-  catch (e) {
-    ms.error(e.message)
+  catch (error: any) {
+    ms.error(error.message ?? 'error')
   }
 }
 
