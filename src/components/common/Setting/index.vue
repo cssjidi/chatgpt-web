@@ -6,6 +6,8 @@ import Advanced from './Advanced.vue'
 import About from './About.vue'
 import Site from './Site.vue'
 import Mail from './Mail.vue'
+import User from './User.vue'
+import Recharge from './Recharge.vue'
 import { SvgIcon } from '@/components/common'
 import { useAuthStore, useUserStore } from '@/store'
 
@@ -39,7 +41,7 @@ const show = computed({
 </script>
 
 <template>
-  <NModal v-model:show="show" :auto-focus="false" preset="card" style="width: 95%; max-width: 640px">
+  <NModal v-model:show="show" :auto-focus="false" preset="card" style="width: 95%; max-width: 850px">
     <div>
       <NTabs v-model:value="active" type="line" animated>
         <NTabPane name="General" tab="General">
@@ -49,6 +51,15 @@ const show = computed({
           </template>
           <div class="min-h-[100px]">
             <General />
+          </div>
+        </NTabPane>
+        <NTabPane name="User" tab="User">
+          <template #tab>
+            <SvgIcon class="text-lg" icon="ri:file-user-line" />
+            <span class="ml-2">{{ $t('setting.favSetting') }}</span>
+          </template>
+          <div class="min-h-[100px]">
+            <User />
           </div>
         </NTabPane>
         <NTabPane v-if="isChatGPTAPI" name="Advanced" tab="Advanced">
@@ -80,6 +91,13 @@ const show = computed({
             <span class="ml-2">{{ $t('setting.mailConfig') }}</span>
           </template>
           <Mail />
+        </NTabPane>
+        <NTabPane v-if="userStore.userInfo.root" name="RechargeConfig" tab="Recharge">
+          <template #tab>
+            <SvgIcon class="text-lg" icon="ri:bank-card-2-line" />
+            <span class="ml-2">{{ $t('setting.rechargeConfig') }}</span>
+          </template>
+          <Recharge />
         </NTabPane>
       </NTabs>
     </div>

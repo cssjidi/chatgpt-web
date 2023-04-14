@@ -45,6 +45,25 @@ export class ChatRoom {
   }
 }
 
+export class Recharge {
+  _id: ObjectId
+  userId: string
+  amount: number
+  createTime: string
+  paymentMethod?: string
+  remark?: string
+  transactionId?: string
+  constructor(userId: string, amount: number, paymentMethod?: string, transactionId?: string, remark?: string) {
+    this.userId = userId
+    this.amount = amount
+    // 手动充值是0101开头
+    this.paymentMethod = paymentMethod || '手动充值'
+    this.transactionId = transactionId || `0101${new Date().getTime()}`
+    this.remark = remark || ''
+    this.createTime = new Date().toLocaleString()
+  }
+}
+
 export class ChatOptions {
   parentMessageId?: string
   messageId?: string

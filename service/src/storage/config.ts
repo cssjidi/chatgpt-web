@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import * as dotenv from 'dotenv-flow'
+import * as dotenv from 'dotenv'
 import { isNotEmptyString } from '../utils/is'
 import { Config, MailConfig, SiteConfig } from './model'
 import { getConfig } from './mongo'

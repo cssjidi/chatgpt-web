@@ -45,6 +45,7 @@ export const useAuthStore = defineStore('auth-store', {
       const decoded = jwt_decode(token) as UserInfo
       const userStore = useUserStore()
       await userStore.updateUserInfo(false, {
+        email: decoded.email,
         avatar: decoded.avatar,
         name: decoded.name,
         description: decoded.description,

@@ -1,6 +1,7 @@
 import type { AxiosProgressEvent, GenericAbortSignal } from 'axios'
 import { get, post } from '@/utils/request'
 import type { ConfigState, MailConfig, SiteConfig } from '@/components/common/Setting/model'
+import type { RechargeInfo } from '@/store/modules/recharge/helper'
 import { useSettingStore } from '@/store'
 
 export function fetchChatAPI<T = any>(
@@ -72,6 +73,13 @@ export function fetchUpdateUserInfo<T = any>(name: string, avatar: string, descr
   return post<T>({
     url: '/user-info',
     data: { name, avatar, description, score },
+  })
+}
+
+export function rechargeInfo<T = any>(email: string, score: number) {
+  return post<T>({
+    url: '/recharge',
+    data: { email, score },
   })
 }
 
@@ -168,5 +176,12 @@ export function resetPassword<T = any>(email: string, code: string, password: st
   return post<T>({
     url: '/reset-password',
     data: { email, password, code },
+  })
+}
+
+export function invest<T = any>(recharge: RechargeInfo) {
+  return post<T>({
+    url: '/payment',
+    data: recharge,
   })
 }

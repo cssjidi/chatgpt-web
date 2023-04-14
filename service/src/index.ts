@@ -1,6 +1,6 @@
 import express from 'express'
 import jwt from 'jsonwebtoken'
-import * as dotenv from 'dotenv-flow'
+import * as dotenv from 'dotenv'
 import { v4 as uuidv4 } from 'uuid'
 import type { RequestProps } from './types'
 import type { ChatContext, ChatMessage } from './chatgpt'
@@ -9,12 +9,13 @@ import { auth } from './middleware/auth'
 import { clearConfigCache, getCacheConfig, getOriginConfig } from './storage/config'
 import type { ChatOptions, Config, MailConfig, SiteConfig, UserInfo } from './storage/model'
 import { Status } from './storage/model'
-import { clearChat, createChatRoom, createUser, deleteAllChatRooms, deleteChat, deleteChatRoom, existsChatRoom, getChat, getChatRooms, getChats, getUser, getUserById, insertChat, renameChatRoom, updateChat, updateConfig, updateUserInfo, verifyUser } from './storage/mongo'
+import { clearChat, createChatRoom, createRecharge, createUser, deleteAllChatRooms, deleteChat, deleteChatRoom, existsChatRoom, getChat, getChatRooms, getChats, getUser, getUserById, insertChat, renameChatRoom, updateChat, updateConfig, updateUserInfo, verifyUser } from './storage/mongo'
 import { limiter } from './middleware/limiter'
 import { isEmail, isNotEmptyString } from './utils/is'
 import { sendCodeMail, sendTestMail, sendVerifyMail } from './utils/mail'
 import { checkUserVerify, getUserVerifyUrl, md5 } from './utils/security'
 import { rootAuth } from './middleware/rootAuth'
+import { NO_CHATS } from './const'
 
 dotenv.config()
 
@@ -142,8 +143,7 @@ router.get('/chat-hisroty', auth, async (req, res) => {
         })
       }
     })
-
-    res.send({ status: 'Success', message: null, data: result })
+    res.send({ status: 'Success', message: null, data: result.length > 0 ? result : NO_CHATS })
   }
   catch (error) {
     console.error(error)
@@ -351,6 +351,7 @@ router.post('/user-login', async (req, res) => {
 
     const config = await getCacheConfig()
     const token = jwt.sign({
+      email: user.email,
       name: user.name ? user.name : user.email,
       avatar: user.avatar,
       description: user.description,
@@ -368,13 +369,27 @@ router.post('/user-login', async (req, res) => {
 
 router.post('/user-info', auth, async (req, res) => {
   try {
-    const { name, avatar, description } = req.body as UserInfo
+    const { name, avatar, description, score } = req.body as UserInfo
     const userId = req.headers.userId.toString()
 
     const user = await getUserById(userId)
     if (user == null || user.status !== Status.Normal)
       throw new Error('用户不存在 | User does not exist.')
-    await updateUserInfo(userId, { name, avatar, description } as UserInfo)
+    await updateUserInfo(userId, { ...user, name, avatar, description, score } as UserInfo)
+    res.send({ status: 'Success', message: '更新成功 | Update successfully' })
+  }
+  catch (error) {
+    res.send({ status: 'Fail', message: error.message, data: null })
+  }
+})
+
+router.post('/recharge', rootAuth, async (req, res) => {
+  try {
+    const { email, score } = req.body as UserInfo
+    const user = await getUser(email)
+    if (user == null || user.status !== Status.Normal)
+      throw new Error('用户不存在 | User does not exist.')
+    await updateUserInfo(user._id, { ...user, score } as UserInfo)
     res.send({ status: 'Success', message: '更新成功 | Update successfully' })
   }
   catch (error) {
@@ -479,7 +494,7 @@ app.post('/send-code', async (req, res) => {
 })
 
 // 修改密码接口
-app.post('/reset-password', async (req, res) => {
+router.post('/reset-password', async (req, res) => {
   try {
     const { email, password, code } = req.body
     const correctCode = correctCodes.get(email)
@@ -495,6 +510,21 @@ app.post('/reset-password', async (req, res) => {
     const newPassword = md5(password + process.env.PASSWORD_MD5_SALT)
     await updateUserInfo(user._id, { password: newPassword } as UserInfo)
     res.send({ status: 'Success', message: '更改成功 | Update successfully' })
+  }
+  catch (error) {
+    res.send({ status: 'Fail', message: error.message, data: null })
+  }
+})
+
+// 充值表
+router.post('/payment', rootAuth, async (req, res) => {
+  try {
+    const { email, amount, paymentMethod, transactionId, remark } = req.body
+    const user = await getUser(email)
+    if (user == null || user.status === Status.PreVerify)
+      throw new Error('用户不存在或账户未激活')
+    await createRecharge(email, amount, paymentMethod, transactionId, remark)
+    res.send({ status: 'Success', message: '充值成功 | Update successfully' })
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })

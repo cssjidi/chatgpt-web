@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { fetchUpdateUserInfo } from '../../../api/'
+import { fetchUpdateUserInfo, rechargeInfo } from '../../../api/'
 import type { UserInfo, UserState } from './helper'
 import { defaultSetting, getLocalState, setLocalState } from './helper'
 
@@ -11,6 +11,13 @@ export const useUserStore = defineStore('user-store', {
       this.recordState()
       if (update)
         await fetchUpdateUserInfo(userInfo.name ?? '', userInfo.avatar ?? '', userInfo.description ?? '', userInfo.score ?? 0)
+    },
+
+    async recharge(update: boolean, userInfo: Partial<UserInfo>) {
+      this.userInfo = { ...this.userInfo, ...userInfo }
+      this.recordState()
+      if (update)
+        await rechargeInfo(userInfo.email ?? '', userInfo.score ?? 0)
     },
 
     resetUserInfo() {

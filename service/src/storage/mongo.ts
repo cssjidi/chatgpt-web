@@ -1,6 +1,6 @@
-import * as dotenv from 'dotenv-flow'
+import * as dotenv from 'dotenv'
 import { MongoClient, ObjectId } from 'mongodb'
-import { ChatInfo, ChatRoom, Status, UserInfo } from './model'
+import { ChatInfo, ChatRoom, Recharge, Status, UserInfo } from './model'
 import type { ChatOptions, Config } from './model'
 
 dotenv.config()
@@ -11,6 +11,7 @@ const chatCol = client.db('chatgpt').collection('chat')
 const roomCol = client.db('chatgpt').collection('chat_room')
 const userCol = client.db('chatgpt').collection('user')
 const configCol = client.db('chatgpt').collection('config')
+const rechargeCol = client.db('chatgpt').collection('recharge')
 
 /**
  * 插入聊天信息
@@ -137,7 +138,7 @@ export async function createUser(email: string, password: string, score: number)
 }
 
 export async function updateUserInfo(userId: string, user: UserInfo) {
-  const result = userCol.updateOne({ _id: new ObjectId(userId) }
+  const result = await userCol.updateOne({ _id: new ObjectId(userId) }
     , { $set: { name: user.name, description: user.description, avatar: user.avatar, score: user.score, status: user.status, password: user.password } })
   return result
 }
@@ -161,8 +162,14 @@ export async function getConfig(): Promise<Config> {
 }
 
 export async function updateConfig(config: Config): Promise<Config> {
-  const result = await configCol.replaceOne({ _id: config._id }, config, { upsert: true })
-  if (result.modifiedCount > 0 || result.upsertedCount > 0)
-    return config
-  return null
+  await configCol.replaceOne({ _id: config._id }, config, { upsert: true })
+  return config
+}
+
+export async function createRecharge(userId: string, amount: number, paymentMethod?: string, transactionId?: string, remark?: string) {
+  const record = new Recharge(userId, amount, paymentMethod, transactionId, remark)
+  const user = await getUser(userId)
+  await updateUserInfo(user._id, { ...user, score: Number(user.score) + Number(amount) } as UserInfo)
+  await rechargeCol.insertOne(record)
+  return record
 }

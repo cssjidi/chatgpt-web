@@ -14,9 +14,9 @@
     "node": "^16 || ^18 || ^19"
   },
   "scripts": {
-    "local": "set NODE_ENV=local&&esno ./src/index.ts",
-    "start": "set NODE_ENV=development&&esno ./src/index.ts",
-    "dev": "esno watch ./src/index.ts",
+    "start": "esno ./src/index.ts",
+    "debug": "esno --inspect ./src/index.ts",
+    "dev": "esno watch --inspect ./src/index.ts",
     "prod": "esno ./build/index.js",
     "build": "pnpm clean && tsup",
     "clean": "rimraf build",

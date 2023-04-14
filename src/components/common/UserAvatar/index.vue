@@ -27,7 +27,7 @@ const userInfo = computed(() => userStore.userInfo)
     </div>
     <div class="flex-1 min-w-0 ml-2">
       <h2 v-if="userInfo.name" class="overflow-hidden font-bold text-md text-ellipsis whitespace-nowrap">
-        {{ userInfo.name }}({{ userInfo.score }}分)
+        {{ userInfo.name }}
       </h2>
       <h2 v-else class="overflow-hidden font-bold text-md text-ellipsis whitespace-nowrap">
         {{ $t('common.notLoggedIn') }}

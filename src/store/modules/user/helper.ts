@@ -3,6 +3,7 @@ import { ss } from '@/utils/storage'
 const LOCAL_NAME = 'userStorage'
 
 export interface UserInfo {
+  email: string
   avatar: string
   name: string
   description: string
@@ -18,6 +19,7 @@ export interface UserState {
 export function defaultSetting(): UserState {
   return {
     userInfo: {
+      email: '',
       avatar: '',
       name: '',
       description: '',

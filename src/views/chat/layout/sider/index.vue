@@ -4,17 +4,22 @@ import { computed, ref, watch } from 'vue'
 import { NButton, NLayoutSider } from 'naive-ui'
 import List from './List.vue'
 import Footer from './Footer.vue'
-import { useAppStore, useChatStore } from '@/store'
+import { useAppStore, useChatStore, useUserStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { PromptStore } from '@/components/common'
+import { PaymentStore, PromptStore, SvgIcon } from '@/components/common'
 
 const appStore = useAppStore()
 const chatStore = useChatStore()
+const userStore = useUserStore()
 
 const { isMobile } = useBasicLayout()
 const show = ref(false)
 
 const collapsed = computed(() => appStore.siderCollapsed)
+
+const showPayment = ref(false)
+
+const score = ref(userStore.userInfo.score)
 
 async function handleAdd() {
   await chatStore.addHistory({ title: 'New Chat', uuid: Date.now(), isEdit: false })
@@ -79,10 +84,23 @@ watch(
         <div class="flex-1 min-h-0 pb-4 overflow-hidden">
           <List />
         </div>
-        <div class="p-4">
+        <div class="px-4">
           <NButton block @click="show = true">
             {{ $t('store.siderButton') }}
           </NButton>
+        </div>
+        <div class="px-0.5">
+          <div class="flex items-center justify-between min-w-0 overflow-hidden m-4 rounded" style="background-color:#10B981;color:#fff;">
+            <div class="flex-2 flex-shrink-0 overflow-hidden text-left">
+              <SvgIcon style="display: inline" class="text-lg m-0.5" icon="oi:badge" />
+              <span>我的积分：{{ score }}</span>
+            </div>
+            <div class="flex-1 flex-shrink-0 overflow-hidden m-0.5 text-right">
+              <NButton type="warning" align="center" @click="showPayment = true">
+                {{ $t('common.getPoint') }}
+              </NButton>
+            </div>
+          </div>
         </div>
       </main>
       <Footer />
@@ -92,4 +110,5 @@ watch(
     <div v-show="!collapsed" class="fixed inset-0 z-40 bg-black/40" @click="handleUpdateCollapsed" />
   </template>
   <PromptStore v-model:visible="show" />
+  <PaymentStore v-model:visible="showPayment" />
 </template>
