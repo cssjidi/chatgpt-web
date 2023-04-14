@@ -19,6 +19,7 @@ deploy_*.sh
 service/*.zip
 service/.history
 service/*.rar
+.vscode
 .env
 .env*
 
