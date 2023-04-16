@@ -221,7 +221,7 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
   score = Math.max(score - 1, 0)
   if (score === 0 && user.email.toLowerCase() !== process.env.ROOT_USER) {
     status = Status.NoScore
-    await updateUserInfo(token.userId, { score, status } as UserInfo)
+    await updateUserInfo(token.userId, { ...user, score, status } as UserInfo)
     res.send({ id: '200', text: '当前账户没有积分|No points', parentMessageId: '200' })
     return
   }
@@ -242,7 +242,7 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
       systemMessage,
     })
     if (result.status === 'Success') {
-      await updateUserInfo(token.userId, { score, status } as UserInfo)
+      await updateUserInfo(token.userId, { ...user, score, status } as UserInfo)
       await updateChat(message._id, result.data.text, result.data.id)
     }
   }
@@ -482,7 +482,7 @@ router.post('/mail-test', rootAuth, async (req, res) => {
 })
 
 // 发送验证码接口
-app.post('/send-code', async (req, res) => {
+router.post('/send-code', async (req, res) => {
   const { email } = req.body
   // 生成验证码
   const code = uuidv4().substr(0, 6)
@@ -508,7 +508,7 @@ router.post('/reset-password', async (req, res) => {
       return
     }
     const newPassword = md5(password + process.env.PASSWORD_MD5_SALT)
-    await updateUserInfo(user._id, { password: newPassword } as UserInfo)
+    await updateUserInfo(user._id, { ...user, password: newPassword } as UserInfo)
     res.send({ status: 'Success', message: '更改成功 | Update successfully' })
   }
   catch (error) {
