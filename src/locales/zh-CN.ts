@@ -36,6 +36,7 @@ export default {
     recharge: '充值',
     myPoint: '我的积分',
     getPoint: '获取积分',
+    wechatLogin: '微信登陆',
   },
   chat: {
     newChatButton: '新建聊天',

@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { fetchLogin, fetchRegister, fetchVerify } from '@/api'
 import { useAuthStore } from '@/store'
 import Icon403 from '@/icons/403.vue'
+import { WechatLogin } from '@/components/common'
 
 interface Props {
   visible: boolean
@@ -130,7 +131,6 @@ const gotoForgotPassword = () => router.push('/forgot-password')
           <p class="text-base text-center text-slate-500 dark:text-slate-500">
             现在就登录/注册并探索51chat的神奇世界吧！
           </p>
-          <Icon403 class="w-[200px] m-auto" />
         </header>
 
         <!-- Add Tabs -->
@@ -142,6 +142,10 @@ const gotoForgotPassword = () => router.push('/forgot-password')
             <NButton block type="primary" :disabled="disabled" :loading="loading" @click="handleLogin">
               {{ $t('common.login') }}
             </NButton>
+          </NTabPane>
+
+          <NTabPane name="wechat" :tab="$t('common.wechatLogin')" display-directive="show:lazy" tab="show:lazy">
+            <WechatLogin />
           </NTabPane>
 
           <NTabPane v-if="authStore.session && authStore.session.allowRegister" name="register" :tab="$t('common.register')">

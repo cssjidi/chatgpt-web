@@ -9,7 +9,7 @@ import { auth } from './middleware/auth'
 import { clearConfigCache, getCacheConfig, getOriginConfig } from './storage/config'
 import type { ChatOptions, Config, MailConfig, SiteConfig, UserInfo } from './storage/model'
 import { Status } from './storage/model'
-import { clearChat, createChatRoom, createRecharge, createUser, deleteAllChatRooms, deleteChat, deleteChatRoom, existsChatRoom, getChat, getChatRooms, getChats, getUser, getUserById, insertChat, renameChatRoom, updateChat, updateConfig, updateUserInfo, verifyUser } from './storage/mongo'
+import { clearChat, createChatRoom, createRecharge, createUser, deleteAllChatRooms, deleteChat, deleteChatRoom, existsChatRoom, getChat, getChatRooms, getChats, getUser, getUserById, insertChat, renameChatRoom, updateChat, updateConfig, updateUserInfo, verifyUser, getUserByOpenIdAndToken } from './storage/mongo'
 import { limiter } from './middleware/limiter'
 import { isEmail, isNotEmptyString } from './utils/is'
 import { sendCodeMail, sendTestMail, sendVerifyMail } from './utils/mail'
@@ -530,6 +530,51 @@ router.post('/payment', rootAuth, async (req, res) => {
     res.send({ status: 'Fail', message: error.message, data: null })
   }
 })
+
+
+const checkTokenValidity = (tokenFromDb) => {
+  const { access_token, expires_in, create_at } = tokenFromDb;
+  // 计算AccessToken的过期时间
+  const expirationTime = new Date(create_at).getTime() + (expires_in * 1000);
+  console.log(new Date().getTime(),expirationTime,new Date(create_at).getTime() ,expires_in,create_at)
+  // 判断AccessToken是否过期
+  if (new Date().getTime() < expirationTime) {
+    // AccessToken未过期，可以直接使用
+    console.log(`AccessToken: ${access_token}`);
+    return true;
+  } else {
+    // AccessToken已过期，需要手动刷新
+    return false;
+  }
+}
+// 微信登陆
+router.post('/wechat/login', async (req, res) => {
+  try {
+    const { uuid } = req.body
+    const rest = uuid.split('.')
+    const user = await getUserByOpenIdAndToken(rest[0], rest[1])
+    if (!user)
+      throw new Error('登陆失败，请重新扫码登陆')
+    if (checkTokenValidity(user))
+      throw new Error('登陆失败，请重新扫码登陆')
+    const config = await getCacheConfig()
+    const token = jwt.sign({
+      email: user.email,
+      name: user.name ? user.name : user.email,
+      avatar: user.avatar,
+      description: user.description,
+      userId: user._id,
+      score: user.score,
+      Status: user.status,
+    }, config.siteConfig.loginSalt.trim())
+    res.send({ status: 'Success', message: '登录成功', data: { token } })
+  }
+  catch (error) {
+    res.send({ status: 'Fail', message: error.message, data: null })
+  }
+})
+
+
 
 app.use('', router)
 app.use('/api', router)

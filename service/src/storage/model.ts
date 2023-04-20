@@ -45,6 +45,19 @@ export class ChatRoom {
   }
 }
 
+export class Token {
+  constructor(
+    public _id: ObjectId,
+    public access_token: string,
+    public expires_in: Number,
+    public refresh_token: string,
+    public openid: string,
+    public scope: string,
+    public unionid: string,
+    public create_at: string,
+  ) { }
+}
+
 export class Recharge {
   _id: ObjectId
   userId: string

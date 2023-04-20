@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv'
 import { MongoClient, ObjectId } from 'mongodb'
-import { ChatInfo, ChatRoom, Recharge, Status, UserInfo } from './model'
+import { ChatInfo, ChatRoom, Recharge, Status, UserInfo, Token } from './model'
 import type { ChatOptions, Config } from './model'
 
 dotenv.config()
@@ -12,6 +12,7 @@ const roomCol = client.db('chatgpt').collection('chat_room')
 const userCol = client.db('chatgpt').collection('user')
 const configCol = client.db('chatgpt').collection('config')
 const rechargeCol = client.db('chatgpt').collection('recharge')
+const tokenCol = client.db('chatgpt').collection('token')
 
 /**
  * 插入聊天信息
@@ -146,6 +147,14 @@ export async function updateUserInfo(userId: string, user: UserInfo) {
 export async function getUser(email: string): Promise<UserInfo> {
   email = email.toLowerCase()
   return await userCol.findOne({ email }) as UserInfo
+}
+
+export async function getUserByOpenIdAndToken(openid: string, access_token: string): Promise<UserInfo> {
+  const user = await userCol.findOne({ openid }) as UserInfo
+  const token = await tokenCol.findOne({ access_token, openid }) as Token
+  if (token && user)
+    return { ...user, ...token }
+  return null
 }
 
 export async function getUserById(userId: string): Promise<UserInfo> {

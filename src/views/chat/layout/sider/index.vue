@@ -92,7 +92,7 @@ watch(
         <div class="px-0.5">
           <div class="flex items-center justify-between min-w-0 overflow-hidden m-4 rounded" style="background-color:#10B981;color:#fff;">
             <div class="flex-2 flex-shrink-0 overflow-hidden text-left">
-              <SvgIcon style="display: inline" class="text-lg m-0.5" icon="oi:badge" />
+              <SvgIcon style="display: inline" class="text-lg m-0.5" icon="ri:badge" />
               <span>我的积分：{{ score }}</span>
             </div>
             <div class="flex-1 flex-shrink-0 overflow-hidden m-0.5 text-right">

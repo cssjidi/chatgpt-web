@@ -5,5 +5,6 @@ import UserAvatar from './UserAvatar/index.vue'
 import Setting from './Setting/index.vue'
 import PromptStore from './PromptStore/index.vue'
 import PaymentStore from './PaymentStore/index.vue'
+import WechatLogin from './Wechat/login.vue'
 
-export { HoverButton, NaiveProvider, SvgIcon, UserAvatar, Setting, PromptStore, PaymentStore }
+export { HoverButton, NaiveProvider, SvgIcon, UserAvatar, Setting, PromptStore, PaymentStore, WechatLogin }
