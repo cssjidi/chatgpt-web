@@ -21,9 +21,6 @@ ws.addEventListener('message', (event) => {
     case 'qrcode':
       qrcodeUrl.value = data.url;
       break;
-    case 'login_success':
-      userInfo.value = data.user;
-      break;
     default:
       // 其他情况...
       break;

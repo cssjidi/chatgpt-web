@@ -4,7 +4,6 @@ import { NButton, NInput, NModal, NTabPane, NTabs, useMessage } from 'naive-ui'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchLogin, fetchRegister, fetchVerify } from '@/api'
 import { useAuthStore } from '@/store'
-import Icon403 from '@/icons/403.vue'
 import { WechatLogin } from '@/components/common'
 
 interface Props {
@@ -144,7 +143,7 @@ const gotoForgotPassword = () => router.push('/forgot-password')
             </NButton>
           </NTabPane>
 
-          <NTabPane name="wechat" :tab="$t('common.wechatLogin')" display-directive="show:lazy" tab="show:lazy">
+          <NTabPane name="wechat" :tab="$t('common.wechatLogin')" display-directive="show:lazy">
             <WechatLogin />
           </NTabPane>
 
