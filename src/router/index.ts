@@ -26,12 +26,6 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
-    path: '/wechat',
-    name: 'wechat',
-    component: () => import('@/views/user/Wechat.vue'),
-  },
-
-  {
     path: '/wechat/:uuid',
     name: 'wechat',
     component: () => import('@/views/user/WechatLogin.vue'),
