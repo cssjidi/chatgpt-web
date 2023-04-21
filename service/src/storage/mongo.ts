@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv'
 import { MongoClient, ObjectId } from 'mongodb'
+import jwt from 'jsonwebtoken'
 import { ChatInfo, ChatRoom, Recharge, Status, UserInfo, Token } from './model'
 import type { ChatOptions, Config } from './model'
 
@@ -127,7 +128,7 @@ export async function deleteChat(roomId: number, uuid: number, inversion: boolea
   }
   chatCol.updateOne(query, update)
 }
-
+/*
 export async function createUser(email: string, password: string, score: number): Promise<UserInfo> {
   email = email.toLowerCase()
   const userInfo = new UserInfo(email, password, score)
@@ -137,6 +138,33 @@ export async function createUser(email: string, password: string, score: number)
   await userCol.insertOne(userInfo)
   return userInfo
 }
+*/
+
+export const getToken = async (openid) => {
+  const token = await tokenCol.findOne({ openid })
+  return token
+}
+
+export const setToken = async ({ openid, ...rest }: Token = new Token()): Promise<Token> => {
+  const filter = { openid }
+  const options = { upsert: true, returnOriginal: false }
+  const update = { $set: { openid, ...rest } }
+  const result = await tokenCol.findOneAndUpdate(filter, update, options)
+  return result.value as Token
+}
+
+export const createUser = async ({ email, password, score, openid, ...rest }: UserInfo = new UserInfo()): Promise<UserInfo> => {
+  const userInfo = new UserInfo(email, password, score, openid) as UserInfo
+  console.log(userInfo,rest)
+  Object.assign(userInfo, rest)
+  // 使用 upsert 选项，如果找到匹配项，则更新用户数据，否则插入新的用户数据
+  const result = await userCol.findOneAndUpdate(
+    { email, openid },
+    { $set: userInfo },
+    { upsert: true, returnOriginal: false }
+  )
+  return result.value as UserInfo
+}
 
 export async function updateUserInfo(userId: string, user: UserInfo) {
   const result = await userCol.updateOne({ _id: new ObjectId(userId) }
@@ -144,9 +172,17 @@ export async function updateUserInfo(userId: string, user: UserInfo) {
   return result
 }
 
-export async function getUser(email: string): Promise<UserInfo> {
-  email = email.toLowerCase()
-  return await userCol.findOne({ email }) as UserInfo
+export async function getUser(emailOrOpenid: string): Promise<UserInfo> {
+  if (!emailOrOpenid) {
+    throw new Error('Invalid input')
+  }
+  const isEmail = /\S+@\S+\.\S+/.test(emailOrOpenid)
+  const query = isEmail ? { email: emailOrOpenid.toLowerCase() } : { openid: emailOrOpenid }
+  const result = await userCol.findOne(query)
+  if (!result) {
+    return null
+  }
+  return result as UserInfo
 }
 
 export async function getUserByOpenIdAndToken(openid: string, access_token: string): Promise<UserInfo> {
@@ -181,4 +217,23 @@ export async function createRecharge(userId: string, amount: number, paymentMeth
   await updateUserInfo(user._id, { ...user, score: Number(user.score) + Number(amount) } as UserInfo)
   await rechargeCol.insertOne(record)
   return record
+}
+
+export async function setJWTToken (openid: string, salt: string, accessToken: string) {
+    const user = await getUser(openid)
+    if (!user) {
+        throw new Error('no use')
+    }
+    const token = jwt.sign({
+      email: user.email,
+      name: user.name ? user.name : user.email,
+      avatar: user.avatar,
+      description: user.description,
+      userId: user._id,
+      openid: user.openid,
+      score: user.score,
+      status: user.status,
+      token: accessToken,
+    }, salt)
+    return token
 }

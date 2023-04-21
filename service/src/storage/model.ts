@@ -12,21 +12,23 @@ export enum Status {
 
 export class UserInfo {
   _id: ObjectId
-  name: string
-  email: string
-  password: string
+  name?: string
+  email?: string
+  password?: string
   status: Status
   createTime: string
   verifyTime?: string
   avatar?: string
   description?: string
   score: number
-  constructor(email: string, password: string, score: number) {
+  openid: string
+  constructor(email?: string, password?: string, score?: number, openid?: string) {
     this.name = email
     this.email = email
     this.password = password
     this.score = score
-    this.status = Status.PreVerify
+    this.openid = openid
+    this.status = openid ? Status.Normal : Status.PreVerify
     this.createTime = new Date().toLocaleString()
     this.verifyTime = null
   }
@@ -43,19 +45,6 @@ export class ChatRoom {
     this.title = title
     this.roomId = roomId
   }
-}
-
-export class Token {
-  constructor(
-    public _id: ObjectId,
-    public access_token: string,
-    public expires_in: Number,
-    public refresh_token: string,
-    public openid: string,
-    public scope: string,
-    public unionid: string,
-    public create_at: string,
-  ) { }
 }
 
 export class Recharge {
@@ -141,4 +130,23 @@ export class MailConfig {
     public smtpUserName: string,
     public smtpPassword: string,
   ) { }
+}
+export class Token {
+  _id: ObjectId
+  access_token: string
+  expires_in: Number
+  refresh_token: string
+  openid: string
+  scope: string
+  unionid: string
+  create_at: string
+  constructor(access_token?: string, expires_in?: number, refresh_token?: string, openid?: string, scope?: string, unionid?: string, create_at?: string) {
+    this.access_token = access_token
+    this.expires_in = 7200
+    this.refresh_token = refresh_token
+    this.openid = openid
+    this.scope = scope
+    this.unionid = unionid
+    this.create_at = create_at
+  }
 }

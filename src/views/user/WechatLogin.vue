@@ -3,21 +3,19 @@ import { ref } from 'vue'
 import { useMessage } from 'naive-ui'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/store'
-import { wechatLogin } from '@/api'
 
 const route = useRoute()
 const router = useRouter()
 const loading = ref(false)
 const authStore = useAuthStore()
 
-const { uuid } = route.params as { uuid: string }
+const { token } = route.params as { token: string }
 
 const ms = useMessage()
 
 const authLogin = async () => {
     try {
-        const result = await wechatLogin(uuid)
-        await authStore.setToken(result.data.token)
+        await authStore.setToken(token)
         ms.success('success')
     } catch (error: any) {
         ms.error(error.message ?? 'error')
@@ -34,4 +32,3 @@ authLogin()
     自动登陆中...
   </div>
 </template>
-

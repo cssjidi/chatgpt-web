@@ -8,8 +8,10 @@ export interface UserInfo {
   name: string
   description: string
   root: boolean
+  openid: string
   score: number
   status: number
+  token: string
 }
 
 export interface UserState {
@@ -26,6 +28,8 @@ export function defaultSetting(): UserState {
       score: 0,
       root: false,
       status: 0,
+      openid: '',
+      token: '',
     },
   }
 }

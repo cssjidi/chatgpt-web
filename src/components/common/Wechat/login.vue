@@ -1,32 +1,13 @@
 <script setup lang='ts'>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { wechatLogin } from '@/api'
 import { NSpace } from 'naive-ui'
 
-const qrcodeUrl = ref('')
+const qrcodeUrl = ref<string>('')
 
-// 创建WebSocket对象
-const ws = new WebSocket('wss://www.jiongxiao.com/login');
-
-ws.addEventListener('open', () => {
-  ws.send('get_qrcode');
-});
-
-ws.addEventListener('message', (event) => {
-  const data = JSON.parse(event.data)
-  switch (data.type) {
-    case 'qrcode':
-      qrcodeUrl.value = data.url;
-      break;
-    default:
-      // 其他情况...
-      break;
-  }
-});
-ws.addEventListener('close', () => {
-  console.log('WebSocket connection closed.');
-});
-ws.addEventListener('error', (event) => {
-  console.error('WebSocket connection error:', event);
+onMounted(async () => {
+  const result = await wechatLogin()
+  qrcodeUrl.value = result.data
 });
 </script>
 

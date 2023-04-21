@@ -1,6 +1,6 @@
 <script setup lang='ts'>
 import { computed, onMounted, ref } from 'vue'
-import { NButton, NInput, NModal, NTabPane, NTabs, useMessage } from 'naive-ui'
+import { NButton, NInput, NModal, NTabPane, NGrid, NGi, NTabs, useMessage } from 'naive-ui'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchLogin, fetchRegister, fetchVerify } from '@/api'
 import { useAuthStore } from '@/store'
@@ -120,52 +120,53 @@ const gotoForgotPassword = () => router.push('/forgot-password')
 </script>
 
 <template>
-  <NModal :show="visible" style="width: 90%; max-width: 640px">
-    <div class="p-10 bg-white rounded dark:bg-slate-800">
-      <div class="space-y-4">
-        <header class="space-y-2">
-          <h2 class="text-2xl font-bold text-center text-slate-800 dark:text-neutral-200">
-            很高兴见到您！
-          </h2>
-          <p class="text-base text-center text-slate-500 dark:text-slate-500">
-            现在就登录/注册并探索51chat的神奇世界吧！
-          </p>
-        </header>
-
-        <!-- Add Tabs -->
-        <NTabs v-model:value="activeTab" type="line">
-          <NTabPane name="login" :tab="$t('common.login')">
-            <NInput v-model:value="username" type="text" :placeholder="$t('common.email')" class="mb-2" />
-            <NInput v-model:value="password" type="password" :placeholder="$t('common.password')" class="mb-2" @keypress="handlePress" />
-            <a href="javascript:void(0)" @click="gotoForgotPassword">忘记密码?</a>
-            <NButton block type="primary" :disabled="disabled" :loading="loading" @click="handleLogin">
-              {{ $t('common.login') }}
-            </NButton>
-          </NTabPane>
-
-          <NTabPane name="wechat" :tab="$t('common.wechatLogin')" display-directive="show:lazy">
+  <NModal :show="visible" style="width: 90%; max-width: 720px;overflow: hidden;">
+    <div class="bg-white rounded dark:bg-slate-800">
+      <NGrid x-gap="6" :cols="2">
+        <NGi>
+          <div class="my-10 overflow-hidden">
             <WechatLogin />
-          </NTabPane>
+          </div>
+        </NGi>
+        <NGi class="my-3 p-3 px-3 mr-3">
+          <header class="space-y-2 my-8">
+            <h1 class="text-5xl font-bold text-center text-slate-800 light:text-neutral-200" style="color:#06b6d4">
+              AI无忧
+            </h1>
+            <p class="text-base text-center text-slate-500 dark:text-slate-500">
+              开启智能模式，助你办公无忧
+            </p>
+          </header>
+          <div class="space-y-2">
+            <NTabs v-model:value="activeTab" type="line">
+              <NTabPane name="login" :tab="$t('common.login')">
+                <NInput v-model:value="username" type="text" :placeholder="$t('common.email')" class="mb-2" />
+                <NInput v-model:value="password" type="password" :placeholder="$t('common.password')" class="mb-2" @keypress="handlePress" />
+                <div class="text-right"><a href="javascript:void(0)" @click="gotoForgotPassword">忘记密码?</a></div>
+                <NButton block type="primary" :disabled="disabled" :loading="loading" @click="handleLogin">
+                  {{ $t('common.login') }}
+                </NButton>
+              </NTabPane>
+              <NTabPane v-if="authStore.session && authStore.session.allowRegister" name="register" :tab="$t('common.register')">
+                <NInput v-model:value="username" type="text" :placeholder="$t('common.email')" class="mb-2" />
+                <NInput v-model:value="password" type="password" :placeholder="$t('common.password')" class="mb-2" @input="handlePasswordInput" />
+                <NInput
+                  v-if="showConfirmPassword"
+                  v-model:value="confirmPassword"
+                  type="password"
+                  :placeholder="$t('common.passwordConfirm')"
+                  class="mb-4"
+                  :status="confirmPasswordStatus"
+                />
 
-          <NTabPane v-if="authStore.session && authStore.session.allowRegister" name="register" :tab="$t('common.register')">
-            <NInput v-model:value="username" type="text" :placeholder="$t('common.email')" class="mb-2" />
-            <NInput v-model:value="password" type="password" :placeholder="$t('common.password')" class="mb-2" @input="handlePasswordInput" />
-            <NInput
-              v-if="showConfirmPassword"
-              v-model:value="confirmPassword"
-              type="password"
-              :placeholder="$t('common.passwordConfirm')"
-              class="mb-4"
-              :status="confirmPasswordStatus"
-            />
-
-            <NButton block type="primary" :disabled="disabled || password !== confirmPassword" :loading="loading" @click="handleRegister">
-              {{ $t('common.register') }}
-            </NButton>
-          </NTabPane>
-        </NTabs>
-        <!-- End Tabs -->
-      </div>
+                <NButton block type="primary" :disabled="disabled || password !== confirmPassword" :loading="loading" @click="handleRegister">
+                  {{ $t('common.register') }}
+                </NButton>
+              </NTabPane>
+            </NTabs>
+          </div>
+        </NGi>
+      </NGrid>
     </div>
   </NModal>
 </template>

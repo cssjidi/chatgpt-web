@@ -9,13 +9,14 @@ import { auth } from './middleware/auth'
 import { clearConfigCache, getCacheConfig, getOriginConfig } from './storage/config'
 import type { ChatOptions, Config, MailConfig, SiteConfig, UserInfo } from './storage/model'
 import { Status } from './storage/model'
-import { clearChat, createChatRoom, createRecharge, createUser, deleteAllChatRooms, deleteChat, deleteChatRoom, existsChatRoom, getChat, getChatRooms, getChats, getUser, getUserById, insertChat, renameChatRoom, updateChat, updateConfig, updateUserInfo, verifyUser, getUserByOpenIdAndToken } from './storage/mongo'
+import { clearChat, createChatRoom, createRecharge, createUser, deleteAllChatRooms, deleteChat, deleteChatRoom, existsChatRoom, getChat, getChatRooms, getChats, getUser, getUserById, insertChat, renameChatRoom, updateChat, updateConfig, updateUserInfo, verifyUser, getUserByOpenIdAndToken, getToken, setToken, setJWTToken } from './storage/mongo'
 import { limiter } from './middleware/limiter'
 import { isEmail, isNotEmptyString } from './utils/is'
 import { sendCodeMail, sendTestMail, sendVerifyMail } from './utils/mail'
 import { checkUserVerify, getUserVerifyUrl, md5 } from './utils/security'
 import { rootAuth } from './middleware/rootAuth'
 import { NO_CHATS } from './const'
+const OAuth = require('co-wechat-oauth');
 
 dotenv.config()
 
@@ -23,6 +24,7 @@ const app = express()
 const router = express.Router()
 
 const correctCodes = new Map<string, string>()
+const client = new OAuth(process.env.appid, process.env.secret)
 
 app.use(express.static('public'))
 app.use(express.json())
@@ -287,7 +289,7 @@ router.post('/user-register', async (req, res) => {
       return
     }
     const newPassword = md5(password + process.env.PASSWORD_MD5_SALT)
-    await createUser(username, newPassword, 10)
+    await createUser({ email: username, password: newPassword, score: 10 } as UserInfo)
 
     if (username.toLowerCase() === process.env.ROOT_USER) {
       res.send({ status: 'Success', message: '注册成功 | Register success', data: null })
@@ -534,9 +536,10 @@ router.post('/payment', rootAuth, async (req, res) => {
 
 const checkTokenValidity = (tokenFromDb) => {
   const { access_token, expires_in, create_at } = tokenFromDb;
+  console.log(access_token, expires_in, create_at)
   // 计算AccessToken的过期时间
   const expirationTime = new Date(create_at).getTime() + (expires_in * 1000);
-  console.log(new Date().getTime(),expirationTime,new Date(create_at).getTime() ,expires_in,create_at)
+  console.log(`当前时间：${new Date()},过期时间：${new Date(expirationTime)}`)
   // 判断AccessToken是否过期
   if (new Date().getTime() < expirationTime) {
     // AccessToken未过期，可以直接使用
@@ -555,7 +558,7 @@ router.post('/wechat/login', async (req, res) => {
     const user = await getUserByOpenIdAndToken(rest[0], rest[1])
     if (!user)
       throw new Error('登陆失败，请重新扫码登陆')
-    if (checkTokenValidity(user))
+    if (!checkTokenValidity(user))
       throw new Error('登陆失败，请重新扫码登陆')
     const config = await getCacheConfig()
     const token = jwt.sign({
@@ -574,7 +577,64 @@ router.post('/wechat/login', async (req, res) => {
   }
 })
 
+router.get('/auth', (req, res) => {
+  const url = client.getAuthorizeURLForWebsite(process.env.callbackURL)
+  res.send({ status: 'Success', message: '微信扫码登陆', data: url })
+});
 
+router.get('/callback', async (req, res) => {
+  const code = req.query.code
+
+  try {
+    const result = await client.getAccessToken(code)
+    const tokens = result.data
+    const { access_token, openid, refresh_token } = tokens
+
+    let responseToken = access_token
+    let user = await getUser(openid)
+
+    // 从数据库中获取token
+    const tokenFromDb = await getToken(openid)
+
+    if (!tokenFromDb) {
+      // 如果没有注册，调用此方法
+      console.log('no token in database')
+
+      const userInfo = await client.getUser(openid)
+      const { headimgurl, nickname } = userInfo
+      const avatar = headimgurl
+
+      user = await createUser({ openid, avatar, name: nickname, score: 10 } as UserInfo)
+      await setToken({openid,...tokens})
+    }
+    else {
+      //检查access_token是否过期
+      console.log('token from database', tokenFromDb)
+      const accessTokenIsValid = await checkTokenValidity(tokenFromDb)
+
+      if (!accessTokenIsValid) {
+        console.log('token expired')
+        // 如果access_token过期，使用refresh_token刷新
+        const refreshResult = await client.refreshAccessToken(refresh_token)
+        responseToken = refreshResult.data.access_token
+        await setToken({ openid, ...refreshResult.data })
+      }
+      else {
+        responseToken = tokenFromDb.access_token
+        console.log(`if no expired,use old token:${tokenFromDb.access_token}`)
+      }
+    }
+    const config = await getCacheConfig()
+    const token = await setJWTToken(openid, config.siteConfig.loginSalt.trim(), responseToken)
+
+    console.log(`jwtToken:${token}`)
+    res.redirect(`https://dev.51chat.ai/#/wechat/login?token=${token}`)
+  }
+  catch (error) {
+    console.error(error)
+    res.send('Error')
+  }
+})
 
 app.use('', router)
 app.use('/api', router)

@@ -186,9 +186,8 @@ export function invest<T = any>(recharge: RechargeInfo) {
   })
 }
 
-export function wechatLogin<T = any>(uuid: string) {
-  return post<T>({
-    url: '/wechat/login',
-    data: { uuid },
+export function wechatLogin<T = any>() {
+  return get<T>({
+    url: '/auth',
   })
 }
