@@ -628,7 +628,7 @@ router.get('/callback', async (req, res) => {
     const token = await setJWTToken(openid, config.siteConfig.loginSalt.trim(), responseToken)
 
     console.log(`jwtToken:${token}`)
-    res.redirect(`https://dev.51chat.ai/#/wechat/login?token=${token}`)
+    res.redirect(`/#/wechat/login/${token}`)
   }
   catch (error) {
     console.error(error)
