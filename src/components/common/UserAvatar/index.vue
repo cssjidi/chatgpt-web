@@ -11,8 +11,8 @@ const userInfo = computed(() => userStore.userInfo)
 </script>
 
 <template>
-  <div class="flex items-center overflow-hidden">
-    <div class="w-10 h-10 overflow-hidden rounded-full shrink-0">
+  <div class="overflow-hidden text-center">
+    <div class="overflow-hidden rounded-full text-center">
       <template v-if="isString(userInfo.avatar) && userInfo.avatar.length > 0">
         <NAvatar
           size="large"
@@ -25,7 +25,7 @@ const userInfo = computed(() => userStore.userInfo)
         <NAvatar size="large" round :src="defaultAvatar" />
       </template>
     </div>
-    <div class="flex-1 min-w-0 ml-2">
+    <div class="min-w-0 ml-2">
       <h2 v-if="userInfo.name" class="overflow-hidden font-bold text-md text-ellipsis whitespace-nowrap">
         {{ userInfo.name }}
       </h2>

@@ -21,13 +21,18 @@ export class UserInfo {
   avatar?: string
   description?: string
   score: number
-  openid: string
-  constructor(email?: string, password?: string, score?: number, openid?: string) {
+  vipType: string
+  vipStart: string
+  vipEnd: string
+  openid: string[]
+  unionid: string
+  constructor(email?: string, password?: string, score?: number, openid?: string[], unionid?: string) {
     this.name = email
     this.email = email
     this.password = password
     this.score = score
-    this.openid = openid
+    this.openid = openid || []
+    this.unionid = unionid
     this.status = openid ? Status.Normal : Status.PreVerify
     this.createTime = new Date().toLocaleString()
     this.verifyTime = null

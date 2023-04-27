@@ -19,7 +19,7 @@ const collapsed = computed(() => appStore.siderCollapsed)
 
 const showPayment = ref(false)
 
-const score = ref(userStore.userInfo.score)
+const vipType = ref(userStore.userInfo.vipType)
 
 async function handleAdd() {
   await chatStore.addHistory({ title: 'New Chat', uuid: Date.now(), isEdit: false })
@@ -76,6 +76,7 @@ watch(
   >
     <div class="flex flex-col h-full" :style="mobileSafeArea">
       <main class="flex flex-col flex-1 min-h-0">
+        <Footer />
         <div class="p-4">
           <NButton dashed block @click="handleAdd">
             {{ $t('chat.newChatButton') }}
@@ -84,26 +85,23 @@ watch(
         <div class="flex-1 min-h-0 pb-4 overflow-hidden">
           <List />
         </div>
-        <div class="px-4">
+        <div class="px-4 my-2">
           <NButton block @click="show = true">
             {{ $t('store.siderButton') }}
           </NButton>
         </div>
-        <div class="px-0.5">
-          <div class="flex items-center justify-between min-w-0 overflow-hidden m-4 rounded" style="background-color:#10B981;color:#fff;">
-            <div class="flex-2 flex-shrink-0 overflow-hidden text-left">
-              <SvgIcon style="display: inline" class="text-lg m-0.5" icon="ri:badge" />
-              <span>我的积分：{{ score }}</span>
-            </div>
-            <div class="flex-1 flex-shrink-0 overflow-hidden m-0.5 text-right">
-              <NButton type="warning" align="center" @click="showPayment = true">
-                {{ $t('common.getPoint') }}
-              </NButton>
-            </div>
+        <div v-if="!vipType" class="px-0.5">
+          <div class="min-w-0 overflow-hidden rounded text-center p-4 mt-4" style="border: 1px solid #00C1C1;background-color:#fff;">
+            <p class="text-center">
+              会员特权<br/>
+              每天赠送120积分，低至0.35元/天<br/>
+            </p>
+            <NButton type="warning" block align="center" @click="showPayment = true">
+              开通VIP会员
+            </NButton>
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   </NLayoutSider>
   <template v-if="isMobile">

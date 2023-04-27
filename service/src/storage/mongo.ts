@@ -153,17 +153,33 @@ export const setToken = async ({ openid, ...rest }: Token = new Token()): Promis
   return result.value as Token
 }
 
-export const createUser = async ({ email, password, score, openid, ...rest }: UserInfo = new UserInfo()): Promise<UserInfo> => {
-  const userInfo = new UserInfo(email, password, score, openid) as UserInfo
-  console.log(userInfo,rest)
-  Object.assign(userInfo, rest)
-  // 使用 upsert 选项，如果找到匹配项，则更新用户数据，否则插入新的用户数据
-  const result = await userCol.findOneAndUpdate(
-    { email, openid },
-    { $set: userInfo },
-    { upsert: true, returnOriginal: false }
-  )
-  return result.value as UserInfo
+export const createUser = async ({ email, password, score, openid, unionid, ...rest }: UserInfo = new UserInfo()): Promise<UserInfo> => {
+  const user = await User.findOne({unionid}) as UserInfo
+  console.log('user is :', user)
+  if (user) {
+    // 如果在数据库中找到了用户
+    const userInfo = await User.findOneAndUpdate(
+      { unionid },
+      { $addToSet: { openid }, avatar, name: nickname, verifyTime: new Date().getTime(), status: 0, password: '', email: '' },
+      { new: true }
+    )
+    return userInfo
+  } else {
+    // 如果没有找到用户，则创建一个新用户
+    const userInfo = new User({ openid: [openid], unionid, avatar, name: nickname, score: 10, description: '', verifyTime: new Date().getTime(), status: 0, createTime: new Date().getTime(), password: '', email: '' },{versionKey:false})
+    await userInfo.save(userInfo)
+    return userInfo
+  }
+};
+
+export const updateOpenId  = async (openid: string, unionid: string): Promise<UserInfo> => {
+    const user = await userCol.findOne({unionid}) as UserInfo
+    if (!user) {
+       throw new Error('no user')
+    }
+    // 如果在数据库中找到了用户
+    const userInfo = await userCol.findOneAndUpdate({ unionid }, { $addToSet: { openid }}, { new: true })
+    return userInfo
 }
 
 export async function updateUserInfo(userId: string, user: UserInfo) {
@@ -177,7 +193,8 @@ export async function getUser(emailOrOpenid: string): Promise<UserInfo> {
     throw new Error('Invalid input')
   }
   const isEmail = /\S+@\S+\.\S+/.test(emailOrOpenid)
-  const query = isEmail ? { email: emailOrOpenid.toLowerCase() } : { openid: emailOrOpenid }
+  const query = isEmail ? { email: emailOrOpenid.toLowerCase() } : { unionid: emailOrOpenid }
+  console.log(query)
   const result = await userCol.findOne(query)
   if (!result) {
     return null
@@ -219,8 +236,8 @@ export async function createRecharge(userId: string, amount: number, paymentMeth
   return record
 }
 
-export async function setJWTToken (openid: string, salt: string, accessToken: string) {
-    const user = await getUser(openid)
+export async function setJWTToken (openid: string, unionid: string, salt: string, accessToken: string) {
+    const user = await getUser(unionid)
     if (!user) {
         throw new Error('no use')
     }
@@ -230,7 +247,11 @@ export async function setJWTToken (openid: string, salt: string, accessToken: st
       avatar: user.avatar,
       description: user.description,
       userId: user._id,
+      vipType: user.vipType,
+      vipStart: user.vipStart,
+      vipEnd: user.vipEnd,
       openid: user.openid,
+      unionid: user.unionid,
       score: user.score,
       status: user.status,
       token: accessToken,

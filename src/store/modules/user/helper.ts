@@ -12,6 +12,10 @@ export interface UserInfo {
   score: number
   status: number
   token: string
+  unionid: string
+  vipType: string
+  vipStart: string
+  vipEnd: string
 }
 
 export interface UserState {
@@ -30,6 +34,10 @@ export function defaultSetting(): UserState {
       status: 0,
       openid: '',
       token: '',
+      unionid: '',
+      vipType: '',
+      vipStart: '',
+      vipEnd: '',
     },
   }
 }

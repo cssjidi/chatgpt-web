@@ -9,13 +9,14 @@ import { auth } from './middleware/auth'
 import { clearConfigCache, getCacheConfig, getOriginConfig } from './storage/config'
 import type { ChatOptions, Config, MailConfig, SiteConfig, UserInfo } from './storage/model'
 import { Status } from './storage/model'
-import { clearChat, createChatRoom, createRecharge, createUser, deleteAllChatRooms, deleteChat, deleteChatRoom, existsChatRoom, getChat, getChatRooms, getChats, getUser, getUserById, insertChat, renameChatRoom, updateChat, updateConfig, updateUserInfo, verifyUser, getUserByOpenIdAndToken, getToken, setToken, setJWTToken } from './storage/mongo'
+import { clearChat, createChatRoom, createRecharge, createUser, deleteAllChatRooms, deleteChat, deleteChatRoom, existsChatRoom, getChat, getChatRooms, getChats, getUser, getUserById, insertChat, renameChatRoom, updateChat, updateConfig, updateUserInfo, verifyUser, getUserByOpenIdAndToken, getToken, setToken, setJWTToken, updateOpenId } from './storage/mongo'
 import { limiter } from './middleware/limiter'
 import { isEmail, isNotEmptyString } from './utils/is'
 import { sendCodeMail, sendTestMail, sendVerifyMail } from './utils/mail'
 import { checkUserVerify, getUserVerifyUrl, md5 } from './utils/security'
 import { rootAuth } from './middleware/rootAuth'
 import { NO_CHATS } from './const'
+import moment from 'moment'
 const OAuth = require('co-wechat-oauth');
 
 dotenv.config()
@@ -217,14 +218,19 @@ router.post('/chat', auth, async (req, res) => {
 })
 
 router.post('/chat-process', [auth, limiter], async (req, res) => {
+  const now = moment()
   const token = jwt.decode(req.headers.authorization.replace(/^Bearer\s+/, '')) as { userId: string }
   const user = await getUserById(token.userId)
-  let { status, score } = user
+  let { status, score, vipType, vipEnd } = user
   score = Math.max(score - 1, 0)
-  if (score === 0 && user.email.toLowerCase() !== process.env.ROOT_USER) {
+  if (score === 0 && !vipType) {
     status = Status.NoScore
     await updateUserInfo(token.userId, { ...user, score, status } as UserInfo)
-    res.send({ id: '200', text: '当前账户没有积分|No points', parentMessageId: '200' })
+    res.send({ id: '200', text: '当前账户没有积分', parentMessageId: '200' })
+    return
+  }
+  if (now.diff(moment(vipEnd)) >= 0) {
+    res.send({ id: '200', text: 'VIP已超过有效期，请续费', parentMessageId: '200' })
     return
   }
   res.setHeader('Content-type', 'application/octet-stream')
@@ -588,10 +594,10 @@ router.get('/callback', async (req, res) => {
   try {
     const result = await client.getAccessToken(code)
     const tokens = result.data
-    const { access_token, openid, refresh_token } = tokens
+    const { access_token, openid, unionid, refresh_token } = tokens
 
     let responseToken = access_token
-    let user = await getUser(openid)
+    let user = await getUser(unionid)
 
     // 从数据库中获取token
     const tokenFromDb = await getToken(openid)
@@ -601,10 +607,11 @@ router.get('/callback', async (req, res) => {
       console.log('no token in database')
 
       const userInfo = await client.getUser(openid)
+
       const { headimgurl, nickname } = userInfo
       const avatar = headimgurl
 
-      user = await createUser({ openid, avatar, name: nickname, score: 10 } as UserInfo)
+      user = await createUser({ openid, unionid, avatar, name: nickname, score: 10 } as UserInfo)
       await setToken({openid,...tokens})
     }
     else {
@@ -624,8 +631,9 @@ router.get('/callback', async (req, res) => {
         console.log(`if no expired,use old token:${tokenFromDb.access_token}`)
       }
     }
+    await updateOpenId(openid, unionid)
     const config = await getCacheConfig()
-    const token = await setJWTToken(openid, config.siteConfig.loginSalt.trim(), responseToken)
+    const token = await setJWTToken(openid, unionid, config.siteConfig.loginSalt.trim(), responseToken)
 
     console.log(`jwtToken:${token}`)
     res.redirect(`/#/wechat/login/${token}`)
