@@ -3,6 +3,8 @@ import { MongoClient, ObjectId } from 'mongodb'
 import jwt from 'jsonwebtoken'
 import { ChatInfo, ChatRoom, Recharge, Status, UserInfo, Token } from './model'
 import type { ChatOptions, Config } from './model'
+import { open } from 'fs'
+import { assign } from 'markdown-it/lib/common/utils'
 
 dotenv.config()
 console.log(process.env.MONGODB_URL)
@@ -153,33 +155,33 @@ export const setToken = async ({ openid, ...rest }: Token = new Token()): Promis
   return result.value as Token
 }
 
-export const createUser = async ({ email, password, score, openid, unionid, ...rest }: UserInfo = new UserInfo()): Promise<UserInfo> => {
-  const user = await User.findOne({unionid}) as UserInfo
+export const createUser = async ({ openid, avatar, unionid, name, ...rest }: UserInfo = new UserInfo()): Promise<UserInfo> => {
+  const user = await userCol.findOne({ unionid }) as UserInfo
   console.log('user is :', user)
   if (user) {
     // 如果在数据库中找到了用户
-    const userInfo = await User.findOneAndUpdate(
+    await userCol.updateOne(
       { unionid },
-      { $addToSet: { openid }, avatar, name: nickname, verifyTime: new Date().getTime(), status: 0, password: '', email: '' },
-      { new: true }
-    )
-    return userInfo
-  } else {
+      [{ $set: { avatar, name, verifyTime: new Date().getTime(), status: 0, password: '', email: '' } },
+        { $addToSet: { openid } },
+      ])
+    return user as UserInfo
+  }
+  else {
     // 如果没有找到用户，则创建一个新用户
-    const userInfo = new User({ openid: [openid], unionid, avatar, name: nickname, score: 10, description: '', verifyTime: new Date().getTime(), status: 0, createTime: new Date().getTime(), password: '', email: '' },{versionKey:false})
-    await userInfo.save(userInfo)
+    const userInfo = new UserInfo('', '', name, 10, openid, unionid)
+    await userCol.insertOne(userInfo)
     return userInfo
   }
-};
+}
 
-export const updateOpenId  = async (openid: string, unionid: string): Promise<UserInfo> => {
-    const user = await userCol.findOne({unionid}) as UserInfo
-    if (!user) {
-       throw new Error('no user')
-    }
-    // 如果在数据库中找到了用户
-    const userInfo = await userCol.findOneAndUpdate({ unionid }, { $addToSet: { openid }}, { new: true })
-    return userInfo
+export const updateOpenId = async (openid: string, unionid: string): Promise<UserInfo> => {
+  const user = await userCol.findOne({ unionid }) as UserInfo
+  if (!user)
+    throw new Error('no user')
+  // 如果在数据库中找到了用户
+  await userCol.updateOne({ unionid }, { $addToSet: { openid } })
+  return user as UserInfo
 }
 
 export async function updateUserInfo(userId: string, user: UserInfo) {
@@ -189,24 +191,25 @@ export async function updateUserInfo(userId: string, user: UserInfo) {
 }
 
 export async function getUser(emailOrOpenid: string): Promise<UserInfo> {
-  if (!emailOrOpenid) {
+  if (!emailOrOpenid)
     throw new Error('Invalid input')
-  }
+
   const isEmail = /\S+@\S+\.\S+/.test(emailOrOpenid)
   const query = isEmail ? { email: emailOrOpenid.toLowerCase() } : { unionid: emailOrOpenid }
   console.log(query)
   const result = await userCol.findOne(query)
-  if (!result) {
+  if (!result)
     return null
-  }
   return result as UserInfo
 }
 
 export async function getUserByOpenIdAndToken(openid: string, access_token: string): Promise<UserInfo> {
   const user = await userCol.findOne({ openid }) as UserInfo
   const token = await tokenCol.findOne({ access_token, openid }) as Token
-  if (token && user)
-    return { ...user, ...token }
+  if (token && user) {
+    delete user.openid
+    return Object.assign(user, token)
+  }
   return null
 }
 
@@ -236,25 +239,24 @@ export async function createRecharge(userId: string, amount: number, paymentMeth
   return record
 }
 
-export async function setJWTToken (openid: string, unionid: string, salt: string, accessToken: string) {
-    const user = await getUser(unionid)
-    if (!user) {
-        throw new Error('no use')
-    }
-    const token = jwt.sign({
-      email: user.email,
-      name: user.name ? user.name : user.email,
-      avatar: user.avatar,
-      description: user.description,
-      userId: user._id,
-      vipType: user.vipType,
-      vipStart: user.vipStart,
-      vipEnd: user.vipEnd,
-      openid: user.openid,
-      unionid: user.unionid,
-      score: user.score,
-      status: user.status,
-      token: accessToken,
-    }, salt)
-    return token
+export async function setJWTToken(openid: string, unionid: string, salt: string, accessToken: string) {
+  const user = await getUser(unionid)
+  if (!user)
+    throw new Error('no use')
+  const token = jwt.sign({
+    email: user.email,
+    name: user.name ? user.name : user.email,
+    avatar: user.avatar,
+    description: user.description,
+    userId: user._id,
+    vipType: user.vipType,
+    vipStart: user.vipStart,
+    vipEnd: user.vipEnd,
+    openid: user.openid,
+    unionid: user.unionid,
+    score: user.score,
+    status: user.status,
+    token: accessToken,
+  }, salt)
+  return token
 }

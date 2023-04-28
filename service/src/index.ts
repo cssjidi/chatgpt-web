@@ -223,16 +223,22 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
   const user = await getUserById(token.userId)
   let { status, score, vipType, vipEnd } = user
   score = Math.max(score - 1, 0)
-  if (score === 0 && !vipType) {
-    status = Status.NoScore
-    await updateUserInfo(token.userId, { ...user, score, status } as UserInfo)
-    res.send({ id: '200', text: '当前账户没有积分', parentMessageId: '200' })
+  updateUserInfo(token.userId, { ...user, score, status } as UserInfo)
+  const ErrorMessages = {
+    NoScore: '抱歉，您的积分已用完，请开通会员后继续使用，谢谢',
+    NoVip: 'VIP已超过有效期，请续费',
+    NoPointsToday: '抱歉，今日赠送的积分已用完，请明天再来哦，谢谢。',
+  }
+  if (score === 0) {
+    const errorMessage = vipType ? ErrorMessages.NoPointsToday : ErrorMessages.NoScore
+    res.send({ id: '200', text: errorMessage, parentMessageId: '200' })
     return
   }
-  if (now.diff(moment(vipEnd)) >= 0) {
-    res.send({ id: '200', text: 'VIP已超过有效期，请续费', parentMessageId: '200' })
+  if (moment(vipEnd).isAfter(now)) {
+    res.send({ id: '200', text: ErrorMessages.NoVip, parentMessageId: '200' })
     return
   }
+
   res.setHeader('Content-type', 'application/octet-stream')
   try {
     const { roomId, uuid, regenerate, prompt, options = {}, systemMessage } = req.body as RequestProps
@@ -538,7 +544,6 @@ router.post('/payment', rootAuth, async (req, res) => {
     res.send({ status: 'Fail', message: error.message, data: null })
   }
 })
-
 
 const checkTokenValidity = (tokenFromDb) => {
   const { access_token, expires_in, create_at } = tokenFromDb;

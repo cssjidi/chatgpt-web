@@ -26,12 +26,12 @@ export class UserInfo {
   vipEnd: string
   openid: string[]
   unionid: string
-  constructor(email?: string, password?: string, score?: number, openid?: string[], unionid?: string) {
-    this.name = email
+  constructor(email?: string, password?: string, name: string, score?: number, openid?: string[], unionid?: string) {
+    this.name = name
     this.email = email
     this.password = password
     this.score = score
-    this.openid = openid || []
+    this.openid = []
     this.unionid = unionid
     this.status = openid ? Status.Normal : Status.PreVerify
     this.createTime = new Date().toLocaleString()

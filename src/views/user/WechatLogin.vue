@@ -16,7 +16,7 @@ const ms = useMessage()
 const authLogin = async () => {
     try {
         await authStore.setToken(token)
-        ms.success('success')
+        ms.success('自动登陆成功')
     } catch (error: any) {
         ms.error(error.message ?? 'error')
     } finally {
