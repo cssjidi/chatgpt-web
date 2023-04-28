@@ -5,12 +5,15 @@ import { useRoute, useRouter } from 'vue-router'
 import { fetchLogin, fetchRegister, fetchVerify } from '@/api'
 import { useAuthStore } from '@/store'
 import { WechatLogin } from '@/components/common'
+import { useBasicLayout } from '@/hooks/useBasicLayout'
 
 interface Props {
   visible: boolean
 }
 
 defineProps<Props>()
+
+const { isWechat, isMobile } = useBasicLayout()
 
 const route = useRoute()
 const router = useRouter()
@@ -115,13 +118,15 @@ async function handleRegister() {
     loading.value = false
   }
 }
-
 const gotoForgotPassword = () => router.push('/forgot-password')
 </script>
 
 <template>
   <NModal :show="visible" style="width: 90%; max-width: 720px;overflow: hidden;">
-    <div class="bg-white rounded dark:bg-slate-800">
+    <div v-if="isWechat">
+      <WechatLogin wechat="true" />
+    </div>
+    <div v-if="!isWechat" class="bg-white rounded dark:bg-slate-800">
       <NGrid x-gap="6" :cols="2">
         <NGi>
           <div class="my-10 overflow-hidden">
