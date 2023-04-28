@@ -56,7 +56,7 @@ onMounted(() => {
         <div class="flex items-center space-x-4">
           <span class="flex-shrink-0 w-[100px]">{{ $t('setting.api') }}</span>
           <div class="flex-1">
-            <NInput :value="config && config.apiKey" placeholder="" @input="(val) => { if (config) config.apiKey = val }" />
+            <NInput :value="config && config.apiKey" placeholder="" @input="(val: string) => { if (config) config.apiKey = val }" />
           </div>
           <p v-if="isChatGPTAPI">
             {{ $t("setting.balance") }}：{{ config?.balance ?? '-' }}
@@ -65,49 +65,49 @@ onMounted(() => {
         <div v-if="isChatGPTAPI" class="flex items-center space-x-4">
           <span class="flex-shrink-0 w-[100px]">{{ $t('setting.apiBaseUrl') }}</span>
           <div class="flex-1">
-            <NInput :value="config && config.apiBaseUrl" placeholder="https://api.openai.com" @input="(val) => { if (config) config.apiBaseUrl = val }" />
+            <NInput :value="config && config.apiBaseUrl" placeholder="https://api.openai.com" @input="(val: string) => { if (config) config.apiBaseUrl = val }" />
           </div>
         </div>
         <div v-if="isChatGPTAPI" class="flex items-center space-x-4">
           <span class="flex-shrink-0 w-[100px]">{{ $t('setting.apiModel') }}</span>
           <div class="flex-1">
-            <NInput :value="config && config.apiModel" placeholder="" @input="(val) => { if (config) config.apiModel = val }" />
+            <NInput :value="config && config.apiModel" placeholder="" @input="(val: string) => { if (config) config.apiModel = val }" />
           </div>
         </div>
         <div class="flex items-center space-x-4">
           <span class="flex-shrink-0 w-[100px]">{{ $t('setting.accessToken') }}</span>
           <div class="flex-1">
-            <NInput :value="config && config.accessToken" placeholder="" @input="(val) => { if (config) config.accessToken = val }" />
+            <NInput :value="config && config.accessToken" placeholder="" @input="(val: string) => { if (config) config.accessToken = val }" />
           </div>
         </div>
         <div v-if="!isChatGPTAPI" class="flex items-center space-x-4">
           <span class="flex-shrink-0 w-[100px]">{{ $t('setting.reverseProxy') }}</span>
           <div class="flex-1">
-            <NInput :value="config && config.reverseProxy" placeholder="" @input="(val) => { if (config) config.reverseProxy = val }" />
+            <NInput :value="config && config.reverseProxy" placeholder="" @input="(val: string) => { if (config) config.reverseProxy = val }" />
           </div>
         </div>
         <div class="flex items-center space-x-4">
           <span class="flex-shrink-0 w-[100px]">{{ $t('setting.timeout') }}</span>
           <div class="flex-1">
-            <NInput :value="config && config.timeoutMs !== undefined ? String(config.timeoutMs) : undefined" placeholder="" @input="(val) => { if (config) config.timeoutMs = typeof val === 'string' ? Number(val) : undefined }" />
+            <NInput :value="config && config.timeoutMs !== undefined ? String(config.timeoutMs) : undefined" placeholder="" @input="(val: string) => { if (config) config.timeoutMs = typeof val === 'string' ? Number(val) : undefined }" />
           </div>
         </div>
         <div class="flex items-center space-x-4">
           <span class="flex-shrink-0 w-[100px]">{{ $t('setting.socks') }}</span>
           <div class="flex-1">
-            <NInput :value="config && config.socksProxy" placeholder="" @input="(val) => { if (config) config.socksProxy = val }" />
+            <NInput :value="config && config.socksProxy" placeholder="" @input="(val: string) => { if (config) config.socksProxy = val }" />
           </div>
         </div>
         <div class="flex items-center space-x-4">
           <span class="flex-shrink-0 w-[100px]">{{ $t('setting.socksAuth') }}</span>
           <div class="flex-1">
-            <NInput :value="config && config.socksAuth" placeholder="name:pasword" @input="(val) => { if (config) config.socksAuth = val }" />
+            <NInput :value="config && config.socksAuth" placeholder="name:pasword" @input="(val: string) => { if (config) config.socksAuth = val }" />
           </div>
         </div>
         <div class="flex items-center space-x-4">
           <span class="flex-shrink-0 w-[100px]">{{ $t('setting.httpsProxy') }}</span>
           <div class="flex-1">
-            <NInput :value="config && config.httpsProxy" placeholder="" @input="(val) => { if (config) config.httpsProxy = val }" />
+            <NInput :value="config && config.httpsProxy" placeholder="" @input="(val: string) => { if (config) config.httpsProxy = val }" />
           </div>
         </div>
         <div class="flex items-center space-x-4">

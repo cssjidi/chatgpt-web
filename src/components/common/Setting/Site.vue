@@ -55,7 +55,7 @@ onMounted(() => {
           <div class="flex-1">
             <NInput
               :value="config && config.siteTitle" placeholder=""
-              @input="(val) => { if (config) config.siteTitle = val }"
+              @input="(val: string) => { if (config) config.siteTitle = val }"
             />
           </div>
         </div>
@@ -64,7 +64,7 @@ onMounted(() => {
           <div class="flex-1">
             <NInput
               :value="config && config.siteDomain" placeholder=""
-              @input="(val) => { if (config) config.siteDomain = val }"
+              @input="(val: string) => { if (config) config.siteDomain = val }"
             />
           </div>
         </div>
@@ -74,7 +74,7 @@ onMounted(() => {
             <NSwitch
               :round="false"
               :value="config && config.loginEnabled"
-              @update:value="(val) => { if (config) config.loginEnabled = val }"
+              @update:value="(val: string) => { if (config) config.loginEnabled = val }"
             />
           </div>
         </div>
@@ -83,7 +83,7 @@ onMounted(() => {
           <div class="flex-1">
             <NInput
               :value="config && config.loginSalt" placeholder=""
-              @input="(val) => { if (config) config.loginSalt = val }"
+              @input="(val: string) => { if (config) config.loginSalt = val }"
             />
           </div>
           <p>
@@ -96,7 +96,7 @@ onMounted(() => {
             <NSwitch
               :round="false"
               :value="config && config.registerEnabled"
-              @update:value="(val) => { if (config) config.registerEnabled = val }"
+              @update:value="(val: string) => { if (config) config.registerEnabled = val }"
             />
           </div>
         </div>
@@ -105,7 +105,7 @@ onMounted(() => {
           <div class="flex-1">
             <NInput
               :value="config && config.registerMails" placeholder=""
-              @input="(val) => { if (config) config.registerMails = val }"
+              @input="(val: string) => { if (config) config.registerMails = val }"
             />
           </div>
         </div>

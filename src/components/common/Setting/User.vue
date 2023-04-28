@@ -163,7 +163,7 @@ function handleImportButtonClick(): void {
             style="width: 140px"
             :value="language"
             :options="languageOptions"
-            @update-value="value => appStore.setLanguage(value)"
+            @update-value="(value: string)=> appStore.setLanguage(value)"
           />
         </div>
       </div>

@@ -6,7 +6,7 @@ import List from './List.vue'
 import Footer from './Footer.vue'
 import { useAppStore, useChatStore, useUserStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { PaymentStore, PromptStore, SvgIcon } from '@/components/common'
+import { PaymentStore, PromptStore } from '@/components/common'
 
 const appStore = useAppStore()
 const chatStore = useChatStore()

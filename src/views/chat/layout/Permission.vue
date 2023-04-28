@@ -13,7 +13,7 @@ interface Props {
 
 defineProps<Props>()
 
-const { isWechat, isMobile } = useBasicLayout()
+const { isWechat } = useBasicLayout()
 
 const route = useRoute()
 const router = useRouter()
