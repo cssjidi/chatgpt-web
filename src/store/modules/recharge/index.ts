@@ -1,33 +1,24 @@
 import { defineStore } from 'pinia'
-import type { RechargeInfo } from './helper'
-import { invest } from '@/api'
-
-export interface RechargeState {
-  userId: string
-  amount: number
-  createTime: string
-  paymentMethod: string
-  remark: string
-  transactionId: string
-}
+import { fetchRechargeInfo } from '../../../api/'
+import type { RechargeState } from './helper'
+import { getLocalRechargeList, setLocalRechargeList } from './helper'
 
 export const useRechargeStore = defineStore('recharge-store', {
-  state: (): RechargeState => ({
-    userId: '',
-    amount: 0,
-    createTime: '',
-    paymentMethod: '',
-    remark: '',
-    transactionId: '',
-  }),
-
-  getters: {
-
-  },
-
+  state: (): RechargeState => getLocalRechargeList(),
   actions: {
-    addRechargeRecord(recharge: RechargeInfo) {
-      invest(recharge)
+    async updateRechargeList(rechargeList: any) {
+      this.$patch({ rechargeList })
+      setLocalRechargeList({ rechargeList })
+    },
+    async fetchRecharge() {
+      const result = await fetchRechargeInfo()
+      this.updateRechargeList(result.data)
+    },
+    recordState() {
+      setLocalRechargeList(this.$state)
+    },
+    getRechargeList() {
+      return this.$state
     },
   },
 })

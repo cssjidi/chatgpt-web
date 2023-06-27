@@ -2,6 +2,7 @@ import express from 'express'
 import jwt from 'jsonwebtoken'
 import * as dotenv from 'dotenv'
 import { v4 as uuidv4 } from 'uuid'
+import cron from 'node-cron'
 import type { RequestProps } from './types'
 import type { ChatContext, ChatMessage } from './chatgpt'
 import { chatConfig, chatReplyProcess, currentModel, initApi } from './chatgpt'
@@ -9,7 +10,7 @@ import { auth } from './middleware/auth'
 import { clearConfigCache, getCacheConfig, getOriginConfig } from './storage/config'
 import type { ChatOptions, Config, MailConfig, SiteConfig, UserInfo } from './storage/model'
 import { Status } from './storage/model'
-import { clearChat, createChatRoom, createRecharge, createUser, deleteAllChatRooms, deleteChat, deleteChatRoom, existsChatRoom, getChat, getChatRooms, getChats, getUser, getUserById, insertChat, renameChatRoom, updateChat, updateConfig, updateUserInfo, verifyUser, getUserByOpenIdAndToken, getToken, setToken, setJWTToken, updateOpenId } from './storage/mongo'
+import { clearChat, createChatRoom, createRecharge, createUser, deleteAllChatRooms, deleteChat, deleteChatRoom, existsChatRoom, getChat, getChatRooms, getChats, getUser, getUserById, insertChat, renameChatRoom, updateChat, updateConfig, updateUserInfo, verifyUser, getUserByOpenIdAndToken, getToken, setToken, setJWTToken, updateOpenId, updateVIPScore, getRecharge } from './storage/mongo'
 import { limiter } from './middleware/limiter'
 import { isEmail, isNotEmptyString } from './utils/is'
 import { sendCodeMail, sendTestMail, sendVerifyMail } from './utils/mail'
@@ -146,7 +147,7 @@ router.get('/chat-hisroty', auth, async (req, res) => {
         })
       }
     })
-    res.send({ status: 'Success', message: null, data: result.length > 0 ? result : NO_CHATS })
+    res.send({ status: 'Success', message: null, data: result.length > 0 ? result : [] })
   }
   catch (error) {
     console.error(error)
@@ -221,24 +222,18 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
   const now = moment()
   const token = jwt.decode(req.headers.authorization.replace(/^Bearer\s+/, '')) as { userId: string }
   const user = await getUserById(token.userId)
-  let { status, score, vipType, vipEnd } = user
+  let { status = 0, score, vipType, vipEnd } = user
   score = Math.max(score - 1, 0)
-  updateUserInfo(token.userId, { ...user, score, status } as UserInfo)
-  const ErrorMessages = {
-    NoScore: '抱歉，您的积分已用完，请开通会员后继续使用，谢谢',
-    NoVip: 'VIP已超过有效期，请续费',
-    NoPointsToday: '抱歉，今日赠送的积分已用完，请明天再来哦，谢谢。',
-  }
-  if (score === 0) {
-    const errorMessage = vipType ? ErrorMessages.NoPointsToday : ErrorMessages.NoScore
-    res.send({ id: '200', text: errorMessage, parentMessageId: '200' })
+  if (score === 0 && !vipType) {
+    status = Status.NoScore
+    await updateUserInfo(token.userId, { ...user, score, status } as UserInfo)
+    res.send({ id: '200', text: '当前账户没有积分', parentMessageId: '200' })
     return
   }
-  if (moment(vipEnd).isAfter(now)) {
-    res.send({ id: '200', text: ErrorMessages.NoVip, parentMessageId: '200' })
+  if (now.diff(moment(vipEnd)) >= 0) {
+    res.send({ id: '200', text: 'VIP已超过有效期，请续费', parentMessageId: '200' })
     return
   }
-
   res.setHeader('Content-type', 'application/octet-stream')
   try {
     const { roomId, uuid, regenerate, prompt, options = {}, systemMessage } = req.body as RequestProps
@@ -370,6 +365,9 @@ router.post('/user-login', async (req, res) => {
       avatar: user.avatar,
       description: user.description,
       userId: user._id,
+      vipType: user.vipType,
+      vipStart: user.vipStart,
+      vipEnd: user.vipEnd,
       score: user.score,
       Status: user.status,
       root: username.toLowerCase() === process.env.ROOT_USER,
@@ -556,9 +554,10 @@ const checkTokenValidity = (tokenFromDb) => {
     // AccessToken未过期，可以直接使用
     console.log(`AccessToken: ${access_token}`);
     return true;
-  } else {
+  }
+  else {
     // AccessToken已过期，需要手动刷新
-    return false;
+    return false
   }
 }
 // 微信登陆
@@ -590,11 +589,12 @@ router.post('/wechat/login', async (req, res) => {
 
 router.get('/auth', (req, res) => {
   const url = client.getAuthorizeURLForWebsite(process.env.callbackURL)
+  console.log('----url from----',req.headers.referer)
   res.send({ status: 'Success', message: '微信扫码登陆', data: url })
 });
 
-router.get('/callback', async (req, res) => {
-  const code = req.query.code
+const handleCallback = async (req, res) => {
+    const code = req.query.code
 
   try {
     const result = await client.getAccessToken(code)
@@ -606,7 +606,7 @@ router.get('/callback', async (req, res) => {
 
     // 从数据库中获取token
     const tokenFromDb = await getToken(openid)
-
+    console.log('----from url----',req.headers.referer)
     if (!tokenFromDb) {
       // 如果没有注册，调用此方法
       console.log('no token in database')
@@ -641,11 +641,56 @@ router.get('/callback', async (req, res) => {
     const token = await setJWTToken(openid, unionid, config.siteConfig.loginSalt.trim(), responseToken)
 
     console.log(`jwtToken:${token}`)
-    res.redirect(`/#/wechat/login/${token}`)
+    //res.redirect(`/#/wechat/login/${token}`)
+    return `/#/wechat/login/${token}`
   }
   catch (error) {
     console.error(error)
     res.send('Error')
+  }
+}
+
+router.get('/callback/chat', async (req, res) => {
+    const url = await handleCallback(req, res)
+    res.redirect(`https://51chat.ai${url}`)
+})
+
+router.get('/callback', async (req, res) => {
+    const url = await handleCallback(req, res)
+    res.redirect(url)
+})
+
+router.post('/recharge/list', auth, async (req, res) => {
+  try {
+    const userId = req.headers.userId.toString()
+    const user = await getUserById(userId)
+    const recharge = await getRecharge(user.unionid)
+    res.send({ status: 'Success', message: '获取订单列表成功', data: recharge })
+  }
+  catch (error) {
+    res.send({ status: 'Fail', message: error.message, data: null })
+  }
+})
+
+// 定时任务
+async function updateVipUsers() {
+  const now = new Date()
+  const query = {
+    vipType: { $exists: true },
+    vipEnd: { $gt: now.getTime().toString() },
+  }
+  const update = { $set: { score: 120 } }
+  const options = { multi: true }
+  await updateVIPScore(query, update, options)
+}
+
+// 每天0点执行更新操作
+cron.schedule('0 0 * * *', async () => {
+  try {
+    await updateVipUsers()
+  }
+  catch (err) {
+    console.error('定时任务执行失败:', err.message)
   }
 })
 
@@ -653,4 +698,4 @@ app.use('', router)
 app.use('/api', router)
 app.set('trust proxy', 1)
 
-app.listen(3002, () => globalThis.console.log('Server is running on port 3002'))
+app.listen(process.env.PORT, () => globalThis.console.log(`Server is running on port ${process.env.PORT}`))

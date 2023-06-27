@@ -1,21 +1,28 @@
+import { join } from 'path'
 import * as dotenv from 'dotenv'
 import { MongoClient, ObjectId } from 'mongodb'
 import jwt from 'jsonwebtoken'
-import { ChatInfo, ChatRoom, Recharge, Status, UserInfo, Token } from './model'
-import type { ChatOptions, Config } from './model'
-import { open } from 'fs'
-import { assign } from 'markdown-it/lib/common/utils'
+
+import { ChatInfo, ChatRoom, ChatUsage, Recharge, Status, Token, UserInfo, KeyStore } from './model'
+import type { ChatOptions, Config, UsageResponse } from './model'
 
 dotenv.config()
 console.log(process.env.MONGODB_URL)
 const url = process.env.MONGODB_URL
-const client = new MongoClient(url)
+const client = new MongoClient(url, {
+  tls: true,
+  tlsCertificateKeyFile: join(__dirname, '../../certs/db.51chat.ai.pem.crt'),
+  tlsAllowInvalidCertificates: true,
+})
+
 const chatCol = client.db('chatgpt').collection('chat')
 const roomCol = client.db('chatgpt').collection('chat_room')
 const userCol = client.db('chatgpt').collection('user')
 const configCol = client.db('chatgpt').collection('config')
 const rechargeCol = client.db('chatgpt').collection('recharge')
 const tokenCol = client.db('chatgpt').collection('token')
+const usageCol = client.db('chatgpt').collection('chat_usage')
+const keyStoreCol = client.db('chatgpt').collection('key_store')
 
 /**
  * 插入聊天信息
@@ -34,11 +41,22 @@ export async function getChat(roomId: number, uuid: number) {
   return await chatCol.findOne({ roomId, uuid })
 }
 
-export async function updateChat(chatId: string, response: string, messageId: string) {
+export async function updateChat(chatId: string, response: string, messageId: string, usage: UsageResponse, previousResponse?: []) {
   const query = { _id: new ObjectId(chatId) }
   const update = {
-    $set: { 'response': response, 'options.messageId': messageId },
+    $set: {
+      'response': response,
+      'options.messageId': messageId,
+      'options.prompt_tokens': usage?.prompt_tokens,
+      'options.completion_tokens': usage?.completion_tokens,
+      'options.total_tokens': usage?.total_tokens,
+      'options.estimated': usage?.estimated,
+    },
   }
+
+  if (previousResponse)
+    update.$set.previousResponse = previousResponse
+
   await chatCol.updateOne(query, update)
 }
 
@@ -169,7 +187,7 @@ export const createUser = async ({ openid, avatar, unionid, name, ...rest }: Use
   }
   else {
     // 如果没有找到用户，则创建一个新用户
-    const userInfo = new UserInfo('', '', name, 10, openid, unionid)
+    const userInfo = new UserInfo('', '', avatar, name, 10, openid, unionid)
     await userCol.insertOne(userInfo)
     return userInfo
   }
@@ -227,8 +245,12 @@ export async function getConfig(): Promise<Config> {
 }
 
 export async function updateConfig(config: Config): Promise<Config> {
-  await configCol.replaceOne({ _id: config._id }, config, { upsert: true })
-  return config
+  const result = await configCol.replaceOne({ _id: config._id }, config, { upsert: true })
+  if (result.modifiedCount > 0 || result.upsertedCount > 0)
+    return config
+  if (result.matchedCount > 0 && result.modifiedCount <= 0 && result.upsertedCount <= 0)
+    return config
+  return null
 }
 
 export async function createRecharge(userId: string, amount: number, paymentMethod?: string, transactionId?: string, remark?: string) {
@@ -259,4 +281,32 @@ export async function setJWTToken(openid: string, unionid: string, salt: string,
     token: accessToken,
   }, salt)
   return token
+}
+
+export async function updateVIPScore(query, update, options) {
+  const result = await userCol.updateMany(query, update, options)
+  return result
+}
+
+export async function insertChatUsage(userId: string, roomId: number, chatId: ObjectId, messageId: string, usage: UsageResponse) {
+  const chatUsage = new ChatUsage(userId, roomId, chatId, messageId, usage)
+  await usageCol.insertOne(chatUsage)
+  return chatUsage
+}
+
+export async function getRecharge(unionid: string) {
+  return await rechargeCol.find({ userId: unionid }).toArray()
+}
+
+export async function getKeyStore() {
+  const result = await keyStoreCol.findOne({ status: 'active' })
+  return result
+}
+
+export async function updateKeyStoreStatus() {
+  const result = await keyStoreCol.updateOne({ key: process.env.OPENAI_API_KEY }, { $set: { status: 'expire' } })
+  await keyStoreCol.updateOne({ status: 'backup' }, { $set: { status: 'active' } })
+  const rest = await getKeyStore()
+  process.env.OPENAI_API_KEY = rest.key
+  return result
 }

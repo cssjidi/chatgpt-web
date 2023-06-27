@@ -1,16 +1,19 @@
 <script setup lang='ts'>
-import { ref, onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
+import { NCard, NImage, NSpace } from 'naive-ui'
 import { wechatLogin } from '@/api'
-import { NSpace, NImage, NCard } from 'naive-ui'
 
 import wechatImage from '@/assets/wechat.png'
 import defaultImage from '@/assets/website.png'
+import prodImage from '@/assets/prod.jpg'
 
 interface Props {
   wechat: boolean
 }
 
 defineProps<Props>()
+
+const chatImage = location.href.includes('dev') ? wechatImage : prodImage
 
 const qrcodeUrl = ref<string>('')
 
@@ -26,6 +29,6 @@ onMounted(async () => {
   </NSpace>
   <NSpace v-if="wechat" justify="center" style="background-color: #fff;">
     <NCard title="关注并授权后自动登陆" />
-    <NImage :src="wechatImage" :fallback-src="defaultImage" />
+    <NImage :src="chatImage" :fallback-src="defaultImage" />
   </NSpace>
 </template>

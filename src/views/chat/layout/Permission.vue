@@ -1,6 +1,6 @@
 <script setup lang='ts'>
 import { computed, onMounted, ref } from 'vue'
-import { NButton, NInput, NModal, NTabPane, NGrid, NGi, NTabs, useMessage } from 'naive-ui'
+import { NButton, NGi, NGrid, NInput, NModal, NTabPane, NTabs, useMessage } from 'naive-ui'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchLogin, fetchRegister, fetchVerify } from '@/api'
 import { useAuthStore } from '@/store'
@@ -20,10 +20,12 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 const ms = useMessage()
+const { uuid } = route.params
 
 const loading = ref(false)
 const username = ref('')
 const password = ref('')
+const showEmailLogin = ref(false)
 
 const disabled = computed(() => !username.value.trim() || !password.value.trim() || loading.value)
 
@@ -35,6 +37,9 @@ const confirmPassword = ref('')
 function handlePasswordInput() {
   showConfirmPassword.value = password.value.trim() !== ''
 }
+
+if (uuid === 'email')
+  showEmailLogin.value = true
 
 const confirmPasswordStatus = computed(() => {
   if (!password.value || !confirmPassword.value)
@@ -122,20 +127,28 @@ const gotoForgotPassword = () => router.push('/forgot-password')
 </script>
 
 <template>
-  <NModal :show="visible" style="width: 90%; max-width: 720px;overflow: hidden;">
+  <NModal :show="visible" style="overflow: hidden;">
     <div v-if="isWechat">
-      <WechatLogin wechat="true" />
+      <WechatLogin :wechat="true" />
     </div>
-    <div v-if="!isWechat" class="bg-white rounded dark:bg-slate-800">
-      <NGrid x-gap="6" :cols="2">
-        <NGi>
-          <div class="my-10 overflow-hidden">
-            <WechatLogin />
+    <div v-if="!isWechat" class="rounded dark:bg-slate-800">
+      <NGrid x-gap="12" :cols="1">
+        <NGi v-if="!showEmailLogin">
+          <header class="space-y-2 my-3">
+            <h1 class="text-4xl font-bold text-center text-slate-800 light:text-neutral-200" style="color:#fff">
+              轻舟AI
+            </h1>
+            <p class="text-base text-center text-slate-500 dark:text-slate-500" style="color:#fff;">
+              工作如此轻松
+            </p>
+          </header>
+          <div class="overflow-hidden" style="background-color: #fff;border-radius: 15px;width:350px;height: 400px;padding-top:10px;">
+            <WechatLogin :wechat="false" />
           </div>
         </NGi>
-        <NGi class="my-3 p-3 px-3 mr-3">
+        <NGi v-if="showEmailLogin" class="my-3 p-3 px-3 mr-3">
           <header class="space-y-2 my-8">
-            <h1 class="text-5xl font-bold text-center text-slate-800 light:text-neutral-200" style="color:#06b6d4">
+            <h1 class="text-5xl font-bold text-center text-slate-800 light:text-neutral-200" style="color:#fff">
               AI无忧
             </h1>
             <p class="text-base text-center text-slate-500 dark:text-slate-500">

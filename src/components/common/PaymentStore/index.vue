@@ -8,6 +8,7 @@ import {
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import wechatImage from '@/assets/wechat.png'
 import defaultImage from '@/assets/website.png'
+import prodImage from '@/assets/prod.jpg'
 
 interface Props {
   visible: boolean
@@ -21,6 +22,8 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<Emit>()
 
+const qrCode = location.href.includes('dev') ? wechatImage : prodImage
+
 const { isMobile } = useBasicLayout()
 
 const show = computed({
@@ -31,11 +34,11 @@ const customStyle = isMobile.value ? 'width: 90%; max-width: 900px' : 'width: 30
 </script>
 
 <template>
-  <NModal v-model:show="show" title="关注51chat公众号" :style="customStyle" preset="card">
+  <NModal v-model:show="show" title="扫码充值" :style="customStyle" preset="card">
     <NCard
-      title="关注后根据指引完成充值"
+      title="关注公众号后，点击下方“购买会员"
     >
-      <NImage :src="wechatImage" :fallback-src="defaultImage" />
+      <NImage :src="qrCode" :fallback-src="defaultImage" />
     </NCard>
   </NModal>
 </template>

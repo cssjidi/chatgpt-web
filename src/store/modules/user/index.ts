@@ -13,6 +13,11 @@ export const useUserStore = defineStore('user-store', {
         await fetchUpdateUserInfo(userInfo.name ?? '', userInfo.avatar ?? '', userInfo.description ?? '', userInfo.score ?? 0)
     },
 
+    async updateScore(score: number) {
+      this.userInfo = { ...this.userInfo, score }
+      this.recordState()
+    },
+
     async recharge(update: boolean, userInfo: Partial<UserInfo>) {
       this.userInfo = { ...this.userInfo, ...userInfo }
       this.recordState()

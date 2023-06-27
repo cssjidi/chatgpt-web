@@ -8,3 +8,132 @@ body {
 	padding-bottom: constant(safe-area-inset-bottom);
 	padding-bottom: env(safe-area-inset-bottom);
 }
+
+.n-modal-body-wrapper{
+	background: url('../assets/bg.jpg') no-repeat 100%;
+}
+.n-modal{
+	box-shadow: none !important;
+}
+.n-modal-mask{
+	background-color: transparent !important;
+}
+
+.prompt-container-category ul li {
+    display: inline-block;
+    cursor: pointer;
+    margin-right: 10px;
+    padding: 4px 8px;
+    font-size: 12px;
+    margin-bottom: 5px
+}
+
+.prompt-container-category ul li:hover {
+    color: #00cc4c;
+    background-color: rgba(0,204,76,.08)
+}
+
+.category_normal {
+    color: #666;
+    background-color: rgba(229, 229, 229, 0.6)
+}
+
+.category_selected {
+    color: #00cc4c;
+    background-color:#ebfbf1;
+}
+
+.prompt-container-body {
+	column-count: 4; /* 列数 */
+	column-gap: 10px; /* 列之间的间距 */
+    margin-top: 10px;
+}
+
+@media screen and (max-width: 1024px) {
+    .prompt-container-body {
+      columns: 3;
+    }
+  }
+  
+@media screen and (max-width: 768px) {
+    .prompt-container-body {
+        columns: 2;
+    }
+}
+
+@media screen and (max-width: 640px) {
+    .prompt-container-body {
+        columns: 1;
+    }
+}
+
+.prompt-container-body .prompt-body-card {
+    background: #fff;
+    padding: 10px 15px;
+    border-radius: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+	break-inside: avoid-column; 
+    border: 1px solid #e5e7eb;
+}
+
+.prompt-container-body .prompt-body-card:hover {
+    background: #f5f5f5;
+}
+
+.prompt-body-title {
+    color: #444;
+    font-size: 13px;
+    margin-bottom: 10px;
+    position: relative
+}
+
+.prompt-body-title:first-child {
+    font-weight: bold;
+}
+
+.prompt-body-title .prompt-hot-number {
+    font-family: mx-font,monospace;
+    color: rgba(255,255,255,.8)
+}
+
+.prompt-body-title .prompt-use {
+    position: absolute;
+    cursor: pointer;
+    right: 3px;
+    top: 1px;
+    padding: 1px 5px;
+    font-size: 10px;
+    border-radius: 4px;
+    color: #00cc4c;
+    background-color:#ebfbf1;
+}
+
+.prompt-body-title img {
+    display: inline-block;
+    width: 14px;
+    margin-left: 8px;
+    margin-top: -1px
+}
+
+.prompt-body-desc {
+    color: #333;
+    font-size: 11px;
+    margin-bottom: 10px
+}
+
+.prompt-body-content {
+    color: #666;
+    font-size: 10px;
+    line-height: 2.2em;
+    margin-bottom: 10px
+}
+
+.prompt-body-tag span {
+    padding: 3px 6px;
+    color: #d9a45b;
+    font-size: 10px;
+    border-radius: 4px;
+    margin-right: 10px;
+    background-color: rgba(133,102,58,.2)
+}

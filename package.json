@@ -25,6 +25,7 @@
   "dependencies": {
     "@traptitech/markdown-it-katex": "^3.6.0",
     "@vueuse/core": "^9.13.0",
+    "azure-openai": "^0.9.4",
     "highlight.js": "^11.7.0",
     "html2canvas": "^1.4.1",
     "jwt-decode": "^3.1.2",
@@ -32,7 +33,9 @@
     "markdown-it": "^13.0.1",
     "moment": "^2.29.4",
     "naive-ui": "^2.34.3",
+    "node-cron": "^3.0.2",
     "pinia": "^2.0.33",
+    "styled-components": "^6.0.0-rc.1",
     "uuidv4": "^6.2.13",
     "vue": "^3.2.47",
     "vue-i18n": "^9.2.2",

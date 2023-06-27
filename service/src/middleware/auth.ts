@@ -3,6 +3,7 @@ import { getCacheConfig } from '../storage/config'
 
 const auth = async (req, res, next) => {
   const config = await getCacheConfig()
+  console.log(config.siteConfig.loginSalt.trim())
   if (config.siteConfig.loginEnabled) {
     try {
       const token = req.header('Authorization').replace('Bearer ', '')

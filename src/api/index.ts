@@ -1,6 +1,6 @@
 import type { AxiosProgressEvent, GenericAbortSignal } from 'axios'
 import { get, post } from '@/utils/request'
-import type { ConfigState, MailConfig, SiteConfig } from '@/components/common/Setting/model'
+import type { AuditConfig, ConfigState, MailConfig, SiteConfig } from '@/components/common/Setting/model'
 import type { RechargeInfo } from '@/store/modules/recharge/helper'
 import { useSettingStore } from '@/store'
 
@@ -189,5 +189,26 @@ export function invest<T = any>(recharge: RechargeInfo) {
 export function wechatLogin<T = any>() {
   return get<T>({
     url: '/auth',
+  })
+}
+
+export function fetchUpdateAudit<T = any>(audit: AuditConfig) {
+  return post<T>({
+    url: '/setting-audit',
+    data: audit,
+  })
+}
+
+export function fetchTestAudit<T = any>(text: string, audit: AuditConfig) {
+  return post<T>({
+    url: '/audit-test',
+    data: { audit, text },
+  })
+}
+
+export function fetchRechargeInfo<T = any>() {
+  return post<T>({
+    url: '/recharge/list',
+    data: { },
   })
 }

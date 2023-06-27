@@ -8,6 +8,7 @@ import Site from './Site.vue'
 import Mail from './Mail.vue'
 import User from './User.vue'
 import Recharge from './Recharge.vue'
+import Audit from './Audit.vue'
 import { SvgIcon } from '@/components/common'
 import { useAuthStore, useUserStore } from '@/store'
 
@@ -62,7 +63,7 @@ const show = computed({
             <User />
           </div>
         </NTabPane>
-        <NTabPane v-if="isChatGPTAPI" name="Advanced" tab="Advanced">
+        <NTabPane v-if="userStore.userInfo.root && isChatGPTAPI" name="Advanced" tab="Advanced">
           <template #tab>
             <SvgIcon class="text-lg" icon="ri:equalizer-line" />
             <span class="ml-2">{{ $t('setting.advanced') }}</span>
@@ -98,6 +99,13 @@ const show = computed({
             <span class="ml-2">{{ $t('setting.rechargeConfig') }}</span>
           </template>
           <Recharge />
+        </NTabPane>
+        <NTabPane v-if="userStore.userInfo.root" name="AuditConfig" tab="AuditConfig">
+          <template #tab>
+            <SvgIcon class="text-lg" icon="ri:settings-line" />
+            <span class="ml-2">{{ $t('setting.auditConfig') }}</span>
+          </template>
+          <Audit />
         </NTabPane>
       </NTabs>
     </div>

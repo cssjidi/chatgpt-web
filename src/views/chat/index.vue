@@ -1,6 +1,6 @@
 <script setup lang='ts'>
 import type { Ref } from 'vue'
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import type { MessageReactive } from 'naive-ui'
@@ -12,9 +12,9 @@ import { useChat } from './hooks/useChat'
 import { useCopyCode } from './hooks/useCopyCode'
 import { useUsingContext } from './hooks/useUsingContext'
 import HeaderComponent from './components/Header/index.vue'
-import { HoverButton, SvgIcon } from '@/components/common'
+import { EmptyChat, GuideStore, SvgIcon } from '@/components/common'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { useChatStore, usePromptStore } from '@/store'
+import { useChatStore, usePromptStore, useUserStore } from '@/store'
 import { fetchChatAPIProcess } from '@/api'
 import { t } from '@/locales'
 import { debounce } from '@/utils/functions/debounce'
@@ -26,6 +26,7 @@ const openLongReply = import.meta.env.VITE_GLOB_OPEN_LONG_REPLY === 'true'
 const route = useRoute()
 const dialog = useDialog()
 const ms = useMessage()
+const userInfo = useUserStore()
 
 const chatStore = useChatStore()
 
@@ -45,6 +46,7 @@ const prompt = ref<string>('')
 const firstLoading = ref<boolean>(false)
 const loading = ref<boolean>(false)
 const inputRef = ref<Ref | null>(null)
+const show = ref(false)
 
 let loadingms: MessageReactive
 let allmsg: MessageReactive
@@ -65,6 +67,16 @@ dataSources.value.forEach((item, index) => {
 function handleSubmit() {
   onConversation()
 }
+
+watch(
+  () => promptTemplate.value,
+  (value) => {
+    prompt.value = value
+    if (!prompt.value)
+      prompt.value = value
+  },
+  { immediate: true },
+)
 
 async function onConversation() {
   let message = prompt.value
@@ -147,14 +159,13 @@ async function onConversation() {
                 requestOptions: { prompt: message, options: { ...options } },
               },
             )
-
+            data.detail?.score && userInfo.updateScore(data.detail.score)
             if (openLongReply && data.detail.choices[0].finish_reason === 'length') {
               options.parentMessageId = data.id
               lastText = data.text
               message = ''
               return fetchChatAPIOnce()
             }
-
             scrollToBottomIfAtBottom()
           }
           catch (error) {
@@ -169,7 +180,9 @@ async function onConversation() {
   }
   catch (error: any) {
     const errorMessage = error?.message ?? t('common.wrong')
-
+    console.log(error)
+    if (Object.prototype.hasOwnProperty.call(error, 'score'))
+      userInfo.updateScore(error.score)
     if (error.message === 'canceled') {
       updateChatSome(
         +uuid,
@@ -281,7 +294,7 @@ async function onRegenerate(index: number) {
                 requestOptions: { prompt: message, ...options },
               },
             )
-
+            data.detail?.score && userInfo.updateScore(data.detail.score)
             if (openLongReply && data.detail.choices[0].finish_reason === 'length') {
               options.parentMessageId = data.id
               lastText = data.text
@@ -299,6 +312,9 @@ async function onRegenerate(index: number) {
     await fetchChatAPIOnce()
   }
   catch (error: any) {
+    if (Object.prototype.hasOwnProperty.call(error, 'score'))
+      userInfo.updateScore(error.score)
+    error?.score && userInfo.updateScore(error.score)
     if (error.message === 'canceled') {
       updateChatSome(
         +uuid,
@@ -459,11 +475,13 @@ async function handleScroll(event: any) {
   prevScrollTop = scrollTop
 }
 
+const handlePrompt = () => show.value = true
+
 // 可优化部分
 // 搜索选项计算，这里使用value作为索引项，所以当出现重复value时渲染异常(多项同时出现选中效果)
 // 理想状态下其实应该是key作为索引项,但官方的renderOption会出现问题，所以就需要value反renderLabel实现
 const searchOptions = computed(() => {
-  if (prompt.value.startsWith('/')) {
+  if (typeof prompt.value === 'string' && prompt.value.startsWith('#####')) {
     return promptTemplate.value.filter((item: { key: string }) => item.key.toLowerCase().includes(prompt.value.substring(1).toLowerCase())).map((obj: { value: any }) => {
       return {
         label: obj.value,
@@ -492,7 +510,7 @@ const placeholder = computed(() => {
 })
 
 const buttonDisabled = computed(() => {
-  return loading.value || !prompt.value || prompt.value.trim() === ''
+  return loading.value || !prompt.value
 })
 
 const footerClass = computed(() => {
@@ -504,6 +522,8 @@ const footerClass = computed(() => {
 
 onMounted(() => {
   firstLoading.value = true
+  promptTemplate.value = ''
+  prompt.value = promptTemplate.value
   debounce(() => {
     // 直接刷 极小概率不请求
     chatStore.syncChat({ uuid: Number(uuid) } as Chat.History, undefined, () => {
@@ -538,10 +558,7 @@ onUnmounted(() => {
         >
           <NSpin :show="firstLoading">
             <template v-if="!dataSources.length">
-              <div class="flex items-center justify-center mt-4 text-center text-neutral-300">
-                <SvgIcon icon="ri:bubble-chart-fill" class="mr-2 text-3xl" />
-                <span>Aha~</span>
-              </div>
+              <EmptyChat />
             </template>
             <template v-else>
               <div>
@@ -572,22 +589,27 @@ onUnmounted(() => {
     </main>
     <footer :class="footerClass">
       <div class="w-full max-w-screen-xl m-auto">
-        <div class="flex items-center justify-between space-x-2">
-          <HoverButton @click="handleClear">
-            <span class="text-xl text-[#4f555e] dark:text-white">
+        <div class="flex items-center justify-between space-x-2 mb-2 pt-3" style="border-top:1px solid #eee;">
+          <div class="text-xl text-[#4f555e] dark:text-white flex items-center justify-between space-x-2 cursor-pointer">
+            <span class="text-xl text-[#4f555e] dark:text-white flex items-center justify-between space-x-2" @click="handlePrompt">
+              <SvgIcon icon="ri:folder-2-fill" />
+              <i class="text-sm not-italic inline">使用模板</i>
+            </span>
+            <span class="text-xl text-[#4f555e] dark:text-white flex items-center justify-between space-x-2" @click="handleClear">
               <SvgIcon icon="ri:delete-bin-line" />
+              <i class="text-sm not-italic inline">清屏</i>
             </span>
-          </HoverButton>
-          <HoverButton v-if="!isMobile" @click="handleExport">
-            <span class="text-xl text-[#4f555e] dark:text-white">
-              <SvgIcon icon="ri:download-2-line" />
+            <span v-if="!isMobile" class="text-xl text-[#4f555e] dark:text-white flex items-center justify-between space-x-2" @click="handleExport">
+              <SvgIcon icon="akar-icons:cut" />
+              <i class="text-sm not-italic inline">截图</i>
             </span>
-          </HoverButton>
-          <HoverButton v-if="!isMobile" @click="toggleUsingContext">
-            <span class="text-xl" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }">
-              <SvgIcon icon="ri:chat-history-line" />
-            </span>
-          </HoverButton>
+          </div>
+          <span v-if="!isMobile" class="text-xl flex items-center justify-between space-x-2 cursor-pointer" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }" @click="toggleUsingContext">
+            <SvgIcon icon="ri:chat-history-line" />
+            <i class="text-sm not-italic inline">聊天记录</i>
+          </span>
+        </div>
+        <div class="flex items-center justify-between space-x-2">
           <NAutoComplete v-model:value="prompt" :options="searchOptions" :render-label="renderOption">
             <template #default="{ handleInput, handleBlur, handleFocus }">
               <NInput
@@ -613,5 +635,6 @@ onUnmounted(() => {
         </div>
       </div>
     </footer>
+    <GuideStore v-model:visible="show" />
   </div>
 </template>

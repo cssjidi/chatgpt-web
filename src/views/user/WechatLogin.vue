@@ -14,15 +14,17 @@ const { token } = route.params as { token: string }
 const ms = useMessage()
 
 const authLogin = async () => {
-    try {
-        await authStore.setToken(token)
-        ms.success('自动登陆成功')
-    } catch (error: any) {
-        ms.error(error.message ?? 'error')
-    } finally {
-        loading.value = false
-    }
-    router.push('/')
+  try {
+    await authStore.setToken(token)
+    ms.success('自动登陆成功')
+  }
+  catch (error: any) {
+    ms.error(error.message ?? 'error')
+  }
+  finally {
+    loading.value = false
+  }
+  router.push('/')
 }
 authLogin()
 </script>

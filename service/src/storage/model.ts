@@ -1,4 +1,5 @@
 import type { ObjectId } from 'mongodb'
+import type { TextAuditServiceOptions, TextAuditServiceProvider } from 'src/utils/textAudit'
 
 export enum Status {
   Normal = 0,
@@ -26,10 +27,11 @@ export class UserInfo {
   vipEnd: string
   openid: string[]
   unionid: string
-  constructor(email?: string, password?: string, name: string, score?: number, openid?: string[], unionid?: string) {
+  constructor(email?: string, password?: string,avatar: string, name: string, score?: number, openid?: string[], unionid?: string) {
     this.name = name
     this.email = email
     this.password = password
+    this.avatar = avatar
     this.score = score
     this.openid = []
     this.unionid = unionid
@@ -79,7 +81,6 @@ export class ChatOptions {
     this.messageId = messageId
   }
 }
-
 export class ChatInfo {
   _id: ObjectId
   roomId: number
@@ -89,6 +90,7 @@ export class ChatInfo {
   response?: string
   status: Status = Status.Normal
   options: ChatOptions
+  previousResponse?: previousResponse[]
   constructor(roomId: number, uuid: number, prompt: string, options: ChatOptions) {
     this.roomId = roomId
     this.uuid = uuid
@@ -107,12 +109,14 @@ export class Config {
     public accessToken?: string,
     public apiBaseUrl?: string,
     public apiModel?: string,
+    public chatModel?: string,
     public reverseProxy?: string,
     public socksProxy?: string,
     public socksAuth?: string,
     public httpsProxy?: string,
     public siteConfig?: SiteConfig,
     public mailConfig?: MailConfig,
+    public auditConfig?: AuditConfig,
   ) { }
 }
 
@@ -154,4 +158,62 @@ export class Token {
     this.unionid = unionid
     this.create_at = create_at
   }
+}
+export class UsageResponse {
+  prompt_tokens: number
+  completion_tokens: number
+  total_tokens: number
+  estimated: boolean
+}
+export class ChatUsage {
+  _id: ObjectId
+  userId: string
+  roomId: number
+  chatId: ObjectId
+  messageId: string
+  promptTokens: number
+  completionTokens: number
+  totalTokens: number
+  estimated: boolean
+  dateTime: number
+  constructor(userId: string, roomId: number, chatId: ObjectId, messageId: string, usage: UsageResponse) {
+    this.userId = userId
+    this.roomId = roomId
+    this.chatId = chatId
+    this.messageId = messageId
+    if (usage) {
+      this.promptTokens = usage.prompt_tokens
+      this.completionTokens = usage.completion_tokens
+      this.totalTokens = usage.total_tokens
+      this.estimated = usage.estimated
+    }
+    this.dateTime = new Date().getTime()
+  }
+}
+export class AuditConfig {
+  constructor(
+    public enabled: boolean,
+    public provider: TextAuditServiceProvider,
+    public options: TextAuditServiceOptions,
+    public textType: TextAudioType,
+    public customizeEnabled: boolean,
+    public sensitiveWords: string,
+  ) { }
+}
+
+export enum TextAudioType {
+  None = 0,
+  Request = 1 << 0, // 二进制 01
+  Response = 1 << 1, // 二进制 10
+  All = Request | Response, // 二进制 11
+}
+export class previousResponse {
+  response: string
+  options: ChatOptions
+}
+export class KeyStore {
+  user: string
+  password: string
+  key: string
+  status: string
 }

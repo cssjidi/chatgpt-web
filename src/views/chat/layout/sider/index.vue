@@ -4,13 +4,19 @@ import { computed, ref, watch } from 'vue'
 import { NButton, NLayoutSider } from 'naive-ui'
 import List from './List.vue'
 import Footer from './Footer.vue'
-import { useAppStore, useChatStore, useUserStore } from '@/store'
+import { useAppStore, useChatStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { PaymentStore, PromptStore } from '@/components/common'
+import {
+  GuideStore,
+  HelpCenter,
+  InviteStore,
+  OrderStore,
+  PaymentStore,
+  SvgIcon,
+} from '@/components/common'
 
 const appStore = useAppStore()
 const chatStore = useChatStore()
-const userStore = useUserStore()
 
 const { isMobile } = useBasicLayout()
 const show = ref(false)
@@ -19,7 +25,29 @@ const collapsed = computed(() => appStore.siderCollapsed)
 
 const showPayment = ref(false)
 
-const vipType = ref(userStore.userInfo.vipType)
+const showOrder = ref(false)
+
+const showHelp = ref(false)
+
+const showInvite = ref(false)
+
+const menu = [
+  {
+    title: '升级会员',
+    icon: 'tabler:vip',
+    click: () => showPayment.value = true,
+  },
+  {
+    title: '订单记录',
+    icon: 'icon-park-outline:transaction-order',
+    click: () => showOrder.value = true,
+  },
+  {
+    title: '帮助中心',
+    icon: 'simple-icons:wechat',
+    click: () => window.open('https://www.baidu.com'),
+  },
+]
 
 async function handleAdd() {
   await chatStore.addHistory({ title: 'New Chat', uuid: Date.now(), isEdit: false })
@@ -85,19 +113,13 @@ watch(
         <div class="flex-1 min-h-0 pb-4 overflow-hidden">
           <List />
         </div>
-        <div class="px-4 my-2">
-          <NButton block @click="show = true">
-            {{ $t('store.siderButton') }}
-          </NButton>
-        </div>
-        <div v-if="!vipType" class="px-0.5">
-          <div class="min-w-0 overflow-hidden rounded text-center p-4 mt-4" style="border: 1px solid #00C1C1;background-color:#fff;">
-            <p class="text-center">
-              会员特权<br/>
-              每天赠送120积分，低至0.35元/天<br/>
-            </p>
-            <NButton type="warning" block align="center" @click="showPayment = true">
-              开通VIP会员
+        <div class="flex mb-1 pt-3 flex-wrap mx-3">
+          <div v-for="(item, index) of menu" :key="index" class="flex-1 m-1 text-xs">
+            <NButton block @click="item.click">
+              <template #icon>
+                <SvgIcon :icon="item.icon" />
+              </template>
+              {{ item.title }}
             </NButton>
           </div>
         </div>
@@ -107,6 +129,9 @@ watch(
   <template v-if="isMobile">
     <div v-show="!collapsed" class="fixed inset-0 z-40 bg-black/40" @click="handleUpdateCollapsed" />
   </template>
-  <PromptStore v-model:visible="show" />
+  <GuideStore v-model:visible="show" />
   <PaymentStore v-model:visible="showPayment" />
+  <OrderStore v-model:visible="showOrder" />
+  <HelpCenter v-model:visible="showHelp" />
+  <InviteStore v-model:visible="showInvite" />
 </template>
